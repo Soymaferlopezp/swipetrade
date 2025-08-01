@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 245 245 245; /* #F5F5F5 */
+    --foreground: 38 37 61; /* #26253D */
+    --card: 245 245 245;
+    --card-foreground: 38 37 61;
+    --popover: 245 245 245;
+    --popover-foreground: 38 37 61;
+    --primary: 0 211 149; /* #00D395 */
+    --primary-foreground: 38 37 61;
+    --secondary: 58 57 82; /* #3A3952 */
+    --secondary-foreground: 245 245 245;
+    --muted: 58 57 82;
+    --muted-foreground: 245 245 245;
+    --accent: 58 57 82;
+    --accent-foreground: 245 245 245;
+    --destructive: 255 59 48; /* #FF3B30 */
+    --destructive-foreground: 245 245 245;
+    --border: 58 57 82;
+    --input: 58 57 82;
+    --ring: 0 211 149;
+    --radius: 0.5rem;
+
+    /* Sidebar variables */
+    --sidebar-background: 38 37 61; /* #26253D */
+    --sidebar-foreground: 245 245 245; /* #F5F5F5 */
+    --sidebar-primary: 0 211 149; /* #00D395 */
+    --sidebar-primary-foreground: 38 37 61;
+    --sidebar-accent: 58 57 82; /* #3A3952 */
+    --sidebar-accent-foreground: 245 245 245;
+    --sidebar-border: 58 57 82;
+    --sidebar-ring: 0 211 149;
+  }
+
+  .dark {
+    --background: 38 37 61; /* #26253D */
+    --foreground: 245 245 245; /* #F5F5F5 */
+    --card: 38 37 61;
+    --card-foreground: 245 245 245;
+    --popover: 38 37 61;
+    --popover-foreground: 245 245 245;
+    --primary: 0 211 149; /* #00D395 */
+    --primary-foreground: 38 37 61;
+    --secondary: 58 57 82; /* #3A3952 */
+    --secondary-foreground: 245 245 245;
+    --muted: 58 57 82;
+    --muted-foreground: 245 245 245;
+    --accent: 58 57 82;
+    --accent-foreground: 245 245 245;
+    --destructive: 255 59 48; /* #FF3B30 */
+    --destructive-foreground: 245 245 245;
+    --border: 58 57 82;
+    --input: 58 57 82;
+    --ring: 0 211 149;
+
+    /* Sidebar variables for dark mode */
+    --sidebar-background: 38 37 61;
+    --sidebar-foreground: 245 245 245;
+    --sidebar-primary: 0 211 149;
+    --sidebar-primary-foreground: 38 37 61;
+    --sidebar-accent: 58 57 82;
+    --sidebar-accent-foreground: 245 245 245;
+    --sidebar-border: 58 57 82;
+    --sidebar-ring: 0 211 149;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Inter", "Urbanist", "Sora", system-ui, sans-serif;
+  }
+}
