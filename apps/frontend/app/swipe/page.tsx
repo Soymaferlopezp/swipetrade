@@ -1,12 +1,44 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import CardStack from "@/components/card-stack"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { TrendingUp, TrendingDown, DollarSign, Activity } from "lucide-react"
 
+type SwapRecord = {
+  pair: string
+  action: "accepted" | "rejected"
+  price: string
+  status: string
+  tradeType: string
+  timestamp: string
+}
+
 export default function SwipePage() {
+  const [recentSwaps, setRecentSwaps] = useState<SwapRecord[]>([])
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const res = await fetch("http://localhost:3001/api/swaps/history")
+        const data = await res.json()
+        const sorted = data.sort(
+          (a: SwapRecord, b: SwapRecord) =>
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        )
+        setRecentSwaps(sorted.slice(0, 5))
+      } catch (err) {
+        console.error("Error fetching recent swaps:", err)
+      }
+    }
+
+    fetchHistory()
+    const interval = setInterval(fetchHistory, 5000)
+    return () => clearInterval(interval)
+  }, [])
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -14,9 +46,14 @@ export default function SwipePage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-st-light">Swipe Trading</h1>
-            <p className="text-st-light/70 mt-1">Swipe through trading opportunities and make instant decisions</p>
+            <p className="text-st-light/70 mt-1">
+              Swipe through trading opportunities and make instant decisions
+            </p>
           </div>
-          <Badge variant="secondary" className="bg-st-mint/20 text-st-mint border-st-mint/30">
+          <Badge
+            variant="secondary"
+            className="bg-st-mint/20 text-st-mint border-st-mint/30"
+          >
             Live Trading
           </Badge>
         </div>
@@ -79,33 +116,38 @@ export default function SwipePage() {
 
           <Card className="bg-st-dark-lighter border-st-dark-lighter">
             <CardHeader>
+              
+              
               <CardTitle className="text-st-light">Recent Activity</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-st-mint rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm text-st-light">BTC/USD Buy</p>
-                  <p className="text-xs text-st-light/70">2 minutes ago</p>
+              {recentSwaps.map((swap, index) => (
+                <div key={index} className="flex items-center gap-3">
+                  <div
+                    className={`w-2 h-2 rounded-full ${
+                      swap.action === "accepted" ? "bg-st-mint" : "bg-st-red"
+                    }`}
+                  ></div>
+                  <div className="flex-1">
+                    <p className="text-sm text-st-light">
+                      {swap.pair} {swap.action === "accepted" ? "Buy" : "Reject"}
+                    </p>
+                    <p className="text-xs text-st-light/70">
+                      {new Date(swap.timestamp).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </div>
+                  <span
+                    className={`text-sm ${
+                      swap.action === "accepted" ? "text-st-mint" : "text-st-red"
+                    }`}
+                  >
+                    ${swap.price}
+                  </span>
                 </div>
-                <span className="text-sm text-st-mint">+$234</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-st-red rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm text-st-light">ETH/USD Sell</p>
-                  <p className="text-xs text-st-light/70">5 minutes ago</p>
-                </div>
-                <span className="text-sm text-st-red">-$89</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-st-mint rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm text-st-light">AAPL Buy</p>
-                  <p className="text-xs text-st-light/70">12 minutes ago</p>
-                </div>
-                <span className="text-sm text-st-mint">+$156</span>
-              </div>
+              ))}
             </CardContent>
           </Card>
         </div>

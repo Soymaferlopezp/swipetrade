@@ -1,19 +1,73 @@
 "use client"
 
-import { TradeHistoryTable } from "./trade-history-table"
+import { useEffect, useState } from "react"
+import { TradeHistoryTable, TradeRecord } from "./trade-history-table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { TrendingUp, Activity, DollarSign } from "lucide-react"
+import axios from "axios"
 
 export function TradeHistoryView() {
-  // Mock statistics - in a real app, these would be calculated from actual trade data
+  const [history, setHistory] = useState<TradeRecord[]>([])
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const res = await axios.get("http://localhost:3001/api/swaps/history")
+        const raw = res.data
+
+        const formatted: TradeRecord[] = raw.map((item: any, index: number) => ({
+          id: index.toString(),
+          date: new Date(item.timestamp),
+          pair: item.pair,
+          executedPrice: parseFloat(item.price),
+          amount: `${item.amount} ${item.base}`,
+          status:
+            item.status === "confirmed"
+              ? "confirmed"
+              : item.status === "rejected"
+              ? "failed"
+              : "pending",
+          tradeType: item.tradeType || "manual",
+          txHash: undefined,
+        }))
+
+        setHistory(formatted)
+      } catch (err) {
+        console.error("Error fetching trade history", err)
+      }
+    }
+
+    fetchHistory()
+  }, [])
+
   const stats = {
-    totalTrades: 156,
-    successfulTrades: 142,
-    totalVolume: "12.45 ETH",
+    totalTrades: history.length,
+    successfulTrades: history.filter((t) => t.status === "confirmed").length,
+    totalVolume: `${history.reduce((acc, t) => {
+      const val = typeof t.amount === "string"
+        ? parseFloat(t.amount.split(" ")[0])
+        : Number(t.amount || 0)
+      return acc + val
+    }, 0).toFixed(2)} ${typeof history[0]?.amount === "string"
+      ? history[0].amount.split(" ")[1]
+      : "USDC"}`,
     totalPnL: "+$2,847.32",
-    winRate: 91.0,
-    avgTradeSize: "0.08 ETH",
+    winRate: history.length === 0
+      ? 0
+      : ((history.filter((t) => t.status === "confirmed").length / history.length) * 100).toFixed(1),
+    avgTradeSize: history.length === 0
+      ? "0 USDC"
+      : `${(
+          history.reduce((acc, t) => {
+            const val = typeof t.amount === "string"
+              ? parseFloat(t.amount.split(" ")[0])
+              : Number(t.amount || 0)
+            return acc + val
+          }, 0) / history.length
+        ).toFixed(2)} ${typeof history[0]?.amount === "string"
+          ? history[0].amount.split(" ")[1]
+          : "USDC"}`,
   }
 
   return (
@@ -79,57 +133,8 @@ export function TradeHistoryView() {
       </div>
 
       {/* Trade History Table */}
-      <TradeHistoryTable />
-
-      {/* Additional Info Cards */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="bg-st-dark-lighter border-st-dark-lighter">
-          <CardHeader>
-            <CardTitle className="text-st-light">Trading Insights</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-st-light/70">Most Active Pair</span>
-              <span className="text-sm font-medium text-st-light">ETH/USDC</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-st-light/70">Best Performing Day</span>
-              <span className="text-sm font-medium text-st-mint">+$456.78</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-st-light/70">Manual vs Bot Trades</span>
-              <div className="flex gap-2">
-                <Badge variant="secondary" className="bg-st-light/20 text-st-light border-st-light/30 text-xs">
-                  Manual: 62%
-                </Badge>
-                <Badge variant="secondary" className="bg-st-mint/20 text-st-mint border-st-mint/30 text-xs">
-                  Bot: 38%
-                </Badge>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-st-dark-lighter border-st-dark-lighter">
-          <CardHeader>
-            <CardTitle className="text-st-light">Recent Performance</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-st-light/70">Last 7 Days</span>
-              <span className="text-sm font-medium text-st-mint">+$234.56</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-st-light/70">Last 30 Days</span>
-              <span className="text-sm font-medium text-st-mint">+$1,123.45</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-st-light/70">Failed Trades</span>
-              <span className="text-sm font-medium text-st-red">{stats.totalTrades - stats.successfulTrades}</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <TradeHistoryTable/>
     </div>
   )
 }
+

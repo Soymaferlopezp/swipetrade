@@ -20,6 +20,36 @@ export default function SwapCard({
 
   const [tokenA, tokenB] = pair.split('/');
 
+const recordSwap = async (action: 'accepted' | 'rejected') => {
+  const [base, quote] = pair.split('/');
+  const body = {
+    pair,
+    base,
+    quote,
+    price,
+    amount: parseFloat(volume), // puede usar volume como cantidad aproximada
+    action,
+    status: action === 'accepted' ? 'confirmed' : 'rejected',
+    tradeType: 'manual',
+    timestamp: new Date().toISOString(),
+  };
+
+  try {
+    const res = await fetch('http://localhost:3001/api/swaps/history', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+
+    const data = await res.json();
+    console.log('✅ Swap recorded:', data);
+
+    window.dispatchEvent(new Event("recent-activity-refresh"));
+  } catch (err) {
+    console.error('❌ Error saving swap:', err);
+  }
+};
+
   return (
     <div className="w-full max-w-md mx-auto bg-[#1c1c2c] border border-[#333] rounded-2xl p-6 shadow-lg text-white flex flex-col items-center gap-4">
       <div className="flex items-center gap-2 text-xl font-bold">
@@ -49,7 +79,10 @@ export default function SwapCard({
 
       <div className="mt-6 flex gap-4 w-full justify-center">
         <button
-          onClick={onNext}
+          onClick={() => {
+            recordSwap('rejected');
+            onNext();
+          }}
           className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-2 px-6 rounded-lg"
         >
           Reject
@@ -72,6 +105,7 @@ export default function SwapCard({
           volume={volume}
           onCancel={() => setShowModal(false)}
           onConfirm={() => {
+            recordSwap('accepted');
             setShowModal(false);
             setExecuted(true);
             setTimeout(() => {
@@ -88,6 +122,7 @@ export default function SwapCard({
     </div>
   );
 }
+
 
 
 

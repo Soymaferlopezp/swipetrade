@@ -1,10 +1,15 @@
 import express from 'express';
 import cors from 'cors';
 import axios from 'axios';
+import historyRouter from './routes/swaps/history';
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
+
+app.use('/api/swaps/history', historyRouter);
+
 
 app.get('/api/swaps/recommendations', async (req, res) => {
   try {

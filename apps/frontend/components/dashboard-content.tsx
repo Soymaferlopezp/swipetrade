@@ -1,41 +1,43 @@
 "use client"
+
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { TrendingUp, TrendingDown, DollarSign, Activity } from "lucide-react"
-import { CardStack } from "./card-stack"
-import { BotModeView } from "./bot-mode-view"
-import { TradeHistoryView } from "./trade-history-view"
-import { SettingsView } from "./settings-view"
+import CardStack from "./card-stack"
+
+type SwapRecord = {
+  pair: string
+  action: "accepted" | "rejected"
+  price: string
+  status: string
+  tradeType: string
+  timestamp: string
+}
 
 export function DashboardContent() {
-  // For now, we'll show Settings. In a real app, this would be based on routing
-  const activeSection = "Settings" // This would come from router or state
+  const [recentSwaps, setRecentSwaps] = useState<SwapRecord[]>([])
 
-  if (activeSection === "Settings") {
-    return (
-      <div className="flex-1 p-6">
-        <SettingsView />
-      </div>
-    )
-  }
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const res = await fetch("http://localhost:3001/api/swaps/history")
+        const data = await res.json()
+        const sorted = data.sort(
+          (a: SwapRecord, b: SwapRecord) =>
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        )
+        setRecentSwaps(sorted.slice(0, 5))
+      } catch (err) {
+        console.error("Error fetching recent swaps:", err)
+      }
+    }
 
-  if (activeSection === "Trade History") {
-    return (
-      <div className="flex-1 p-6">
-        <TradeHistoryView />
-      </div>
-    )
-  }
+    fetchHistory()
+    const interval = setInterval(fetchHistory, 5000)
+    return () => clearInterval(interval)
+  }, [])
 
-  if (activeSection === "Bot Mode") {
-    return (
-      <div className="flex-1 p-6">
-        <BotModeView />
-      </div>
-    )
-  }
-
-  // Keep existing dashboard content for other sections
   return (
     <>
       <div className="flex-1 space-y-6 p-6">
@@ -43,9 +45,14 @@ export function DashboardContent() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-st-light">Welcome back!</h1>
-            <p className="text-st-light/70 mt-1">Ready to start trading? Swipe through opportunities below.</p>
+            <p className="text-st-light/70 mt-1">
+              Ready to start trading? Swipe through opportunities below.
+            </p>
           </div>
-          <Badge variant="secondary" className="bg-st-mint/20 text-st-mint border-st-mint/30">
+          <Badge
+            variant="secondary"
+            className="bg-st-mint/20 text-st-mint border-st-mint/30"
+          >
             Live Trading
           </Badge>
         </div>
@@ -111,30 +118,33 @@ export function DashboardContent() {
               <CardTitle className="text-st-light">Recent Activity</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-st-mint rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm text-st-light">BTC/USD Buy</p>
-                  <p className="text-xs text-st-light/70">2 minutes ago</p>
+              {recentSwaps.map((swap, index) => (
+                <div key={index} className="flex items-center gap-3">
+                  <div
+                    className={`w-2 h-2 rounded-full ${
+                      swap.action === "accepted" ? "bg-st-mint" : "bg-st-red"
+                    }`}
+                  ></div>
+                  <div className="flex-1">
+                    <p className="text-sm text-st-light">
+                      {swap.pair} {swap.action === "accepted" ? "Buy" : "Reject"}
+                    </p>
+                    <p className="text-xs text-st-light/70">
+                      {new Date(swap.timestamp).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </div>
+                  <span
+                    className={`text-sm ${
+                      swap.action === "accepted" ? "text-st-mint" : "text-st-red"
+                    }`}
+                  >
+                    ${swap.price}
+                  </span>
                 </div>
-                <span className="text-sm text-st-mint">+$234</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-st-red rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm text-st-light">ETH/USD Sell</p>
-                  <p className="text-xs text-st-light/70">5 minutes ago</p>
-                </div>
-                <span className="text-sm text-st-red">-$89</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-st-mint rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm text-st-light">AAPL Buy</p>
-                  <p className="text-xs text-st-light/70">12 minutes ago</p>
-                </div>
-                <span className="text-sm text-st-mint">+$156</span>
-              </div>
+              ))}
             </CardContent>
           </Card>
         </div>
