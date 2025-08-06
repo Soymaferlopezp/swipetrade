@@ -1,8 +1,14 @@
-export type SwapData = {
-  pair: string;
-  price: string;
-  slippage: string;
-  gasFee: string;
-  label: string;
-  volume: string;
-};
+export interface SwapData {
+  id: string;
+  pair: string
+  price: number
+  slippage: number
+  gasFee: number
+  label: string   
+  volume: string  
+  timestamp: string
+  type: "manual" | "bot"
+  txHash?: string
+  destinationAddress?: string 
+}
+

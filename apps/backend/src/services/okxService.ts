@@ -6,7 +6,6 @@ export const fetchRecommendations = async () => {
 
     const data = response.data.data;
 
-    // Filtrar algunos pares populares para demo
     const pairs = data.filter((d: any) =>
       ['ETH-USDT', 'BTC-USDT', 'SOL-USDT', 'AVAX-USDT', 'MATIC-USDT'].includes(d.instId)
     );

@@ -4,8 +4,9 @@ import type React from "react"
 
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
 import { SideNav } from "@/components/side-nav"
-import { WalletProvider, useWallet } from "@/contexts/wallet-context"
+import { WalletProviderContext, useWalletContext } from '@/contexts/wallet-context'
 import { Button } from "@/components/ui/button"
+import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Wallet, ArrowLeft } from "lucide-react"
 import Link from "next/link"
@@ -15,7 +16,7 @@ interface DashboardLayoutProps {
 }
 
 function WalletRequiredMessage() {
-  const { connectWallet } = useWallet()
+  const { isConnected } = useWalletContext() 
 
   return (
     <div className="min-h-screen bg-st-dark flex items-center justify-center p-6">
@@ -28,10 +29,10 @@ function WalletRequiredMessage() {
           <p className="text-st-light/70 mt-2">Please connect your wallet to access the SwipeTrade dashboard</p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Button onClick={connectWallet} className="w-full bg-st-mint text-st-dark hover:bg-st-mint/90 font-semibold">
-            <Wallet className="h-4 w-4 mr-2" />
-            Connect Wallet
-          </Button>
+          <ConnectButton
+            showBalance={false}
+            chainStatus="none"
+          />
           <Button
             asChild
             variant="outline"
@@ -49,14 +50,6 @@ function WalletRequiredMessage() {
 }
 
 function DashboardContent({ children }: DashboardLayoutProps) {
-  const { isConnected } = useWallet()
-
-  // Show wallet required message if not connected
-  if (!isConnected) {
-    return <WalletRequiredMessage />
-  }
-
-  // Show dashboard if wallet is connected
   return (
     <div className="min-h-screen bg-st-dark">
       <SidebarProvider defaultOpen={true}>
@@ -69,10 +62,12 @@ function DashboardContent({ children }: DashboardLayoutProps) {
   )
 }
 
+
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <WalletProvider>
+    <WalletProviderContext>
       <DashboardContent>{children}</DashboardContent>
-    </WalletProvider>
+    </WalletProviderContext>
   )
 }
+

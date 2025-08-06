@@ -1,93 +1,109 @@
-"use client"
+"use client";
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { useAccount, useConnect, useDisconnect, useWalletClient } from "wagmi";
+import { useRouter, usePathname } from "next/navigation";
+import { ethers } from "ethers"; // ✅ Ethers v5 compatible
 
-interface WalletContextType {
-  isConnected: boolean
-  walletAddress: string | null
-  connectWallet: () => Promise<void>
-  disconnectWallet: () => void
+export interface WalletContextType {
+  address: `0x${string}` | undefined;
+  isConnected: boolean;
+  connectWallet: () => Promise<void>;
+  disconnectWallet: () => void;
+  signer: ethers.Signer | null;
 }
 
-const WalletContext = createContext<WalletContextType | undefined>(undefined)
+const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
-export function useWallet() {
-  const context = useContext(WalletContext)
-  if (context === undefined) {
-    throw new Error("useWallet must be used within a WalletProvider")
-  }
-  return context
-}
+export const WalletProviderContext = ({ children }: { children: ReactNode }) => {
+  const { address, isConnected } = useAccount();
+  const { connect, connectors } = useConnect();
+  const { disconnect } = useDisconnect();
+  const { data: walletClient } = useWalletClient();
 
-interface WalletProviderProps {
-  children: ReactNode
-}
+  const [signer, setSigner] = useState<ethers.Signer | null>(null);
 
-export function WalletProvider({ children }: WalletProviderProps) {
-  const [isConnected, setIsConnected] = useState(false)
-  const [walletAddress, setWalletAddress] = useState<string | null>(null)
+  const router = useRouter();
+  const pathname = usePathname();
 
-  // Mock wallet connection - in real app this would integrate with Web3
   const connectWallet = async () => {
-    try {
-      // Simulate wallet connection delay
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      // Mock wallet address
-      const mockAddress = "0xA23B4C5D6E7F8G9H1I2J3K4L5M6N7O8P9Q0R1S2T"
-      setWalletAddress(mockAddress)
-      setIsConnected(true)
-
-      // Store in localStorage for persistence
-      localStorage.setItem("wallet_connected", "true")
-      localStorage.setItem("wallet_address", mockAddress)
-    } catch (error) {
-      console.error("Failed to connect wallet:", error)
+    const metamask = connectors.find((c) => c.id === "injected");
+    if (!metamask) {
+      console.error("No injected wallet found");
+      return;
     }
-  }
+    await connect({ connector: metamask });
+  };
 
   const disconnectWallet = () => {
-    setIsConnected(false)
-    setWalletAddress(null)
-    localStorage.removeItem("wallet_connected")
-    localStorage.removeItem("wallet_address")
-  }
+    disconnect();
+    setSigner(null);
+  };
 
-  // Check for existing connection on mount
   useEffect(() => {
-    const savedConnection = localStorage.getItem("wallet_connected")
-    const savedAddress = localStorage.getItem("wallet_address")
-
-    if (savedConnection === "true" && savedAddress) {
-      setIsConnected(true)
-      setWalletAddress(savedAddress)
+    if (!isConnected && pathname.startsWith("/swipe")) {
+      router.push("/");
     }
-  }, [])
+  }, [isConnected, pathname, router]);
 
-  // Simulate random disconnection for demo (remove in production)
   useEffect(() => {
-    if (isConnected) {
-      const randomDisconnect = setTimeout(() => {
-        // 10% chance of random disconnect after 30 seconds (for demo purposes)
-        if (Math.random() < 0.1) {
-          disconnectWallet()
+    const setupSigner = async () => {
+      if (typeof window !== "undefined" && window.ethereum && walletClient) {
+        try {
+          const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+          // 👇 NECESARIO para que ethers reconozca la cuenta #0
+          await provider.send("eth_requestAccounts", []);
+
+          const signer = provider.getSigner();
+          const address = await signer.getAddress(); // 👈 validación
+
+          console.log("🔐 Signer ready:", signer);
+          console.log("📬 Address:", address);
+
+          setSigner(signer);
+        } catch (error) {
+          console.error("❌ Failed to get signer:", error);
+          setSigner(null);
         }
-      }, 30000)
+      } else {
+        setSigner(null);
+      }
+    };
 
-      return () => clearTimeout(randomDisconnect)
-    }
-  }, [isConnected])
+    setupSigner();
+  }, [walletClient]);
+
+  const contextValue: WalletContextType = {
+    address,
+    isConnected,
+    connectWallet,
+    disconnectWallet,
+    signer,
+  };
 
   return (
-    <WalletContext.Provider
-      value={{
-        isConnected,
-        walletAddress,
-        connectWallet,
-        disconnectWallet,
-      }}
-    >
+    <WalletContext.Provider value={contextValue}>
       {children}
     </WalletContext.Provider>
-  )
-}
+  );
+};
+
+export const useWalletContext = () => {
+  const context = useContext(WalletContext);
+  if (!context) {
+    throw new Error("useWalletContext must be used within WalletProviderContext");
+  }
+  return context;
+};
+
+
+
+
+
+
+
+
+
+
+

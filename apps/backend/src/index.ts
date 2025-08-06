@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import axios from 'axios';
 import historyRouter from './routes/swaps/history';
+import executeRouter from './routes/swaps/execute'
 
 const app = express();
 
@@ -30,6 +31,9 @@ app.get('/api/swaps/recommendations', async (req, res) => {
     res.status(500).json({ error: 'Error fetching swap data from OKX' });
   }
 });
+
+app.use('/api/swaps/execute', executeRouter)
+
 
 app.listen(3001, () => {
   console.log('✅ Backend running on http://localhost:3001');

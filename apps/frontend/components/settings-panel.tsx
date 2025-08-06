@@ -21,7 +21,7 @@ import {
   Copy,
   ExternalLink,
 } from "lucide-react"
-import { useWallet } from "@/contexts/wallet-context"
+import { useWalletContext } from "@/contexts/wallet-context"
 
 interface TradePlannerFilters {
   lowGasFees: boolean
@@ -30,8 +30,8 @@ interface TradePlannerFilters {
 }
 
 export function SettingsPanel() {
-  const { isConnected, walletAddress, connectWallet, disconnectWallet } = useWallet()
-  const [isDarkMode, setIsDarkMode] = useState(true) // Default to dark mode
+  const { isConnected, address, connectWallet, disconnectWallet } = useWalletContext()
+  const [isDarkMode, setIsDarkMode] = useState(true)
   const [tradePlannerFilters, setTradePlannerFilters] = useState<TradePlannerFilters>({
     lowGasFees: false,
     stablecoins: true,
@@ -49,7 +49,6 @@ export function SettingsPanel() {
   const handleReconnectWallet = async () => {
     if (isConnected) {
       disconnectWallet()
-      // Small delay before reconnecting
       setTimeout(() => {
         connectWallet()
       }, 500)
@@ -63,9 +62,9 @@ export function SettingsPanel() {
   }
 
   const copyAddressToClipboard = async () => {
-    if (walletAddress) {
+    if (address) {
       try {
-        await navigator.clipboard.writeText(walletAddress)
+        await navigator.clipboard.writeText(address)
         setCopiedAddress(true)
         setTimeout(() => setCopiedAddress(false), 2000)
       } catch (err) {
@@ -138,10 +137,6 @@ export function SettingsPanel() {
               <span className="text-sm text-st-light/70">Dark</span>
             </div>
           </div>
-
-          <div className="text-xs text-st-light/70 bg-st-dark/50 p-3 rounded-lg">
-            <p>💡 Theme changes will be applied across the entire application</p>
-          </div>
         </CardContent>
       </Card>
 
@@ -159,80 +154,43 @@ export function SettingsPanel() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid gap-4">
-            {Object.entries(tradePlannerFilters).map(([key, isActive]) => {
-              const filterKey = key as keyof TradePlannerFilters
-              const filterLabels = {
-                lowGasFees: "Only low gas fees",
-                stablecoins: "Only stablecoins",
-                quickTrades: "Quick trades",
-              }
-
-              return (
-                <div
-                  key={key}
-                  className={`p-4 rounded-lg border transition-all cursor-pointer ${
-                    isActive
-                      ? "bg-st-mint/10 border-st-mint/30"
-                      : "bg-st-dark border-st-dark-lighter hover:border-st-mint/20"
-                  }`}
-                  onClick={() => handleFilterToggle(filterKey)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg ${isActive ? "bg-st-mint/20" : "bg-st-light/10"}`}>
-                        {getFilterIcon(filterKey)}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <Label className="text-st-light font-medium cursor-pointer">{filterLabels[filterKey]}</Label>
-                          {isActive && (
-                            <Badge variant="secondary" className="bg-st-mint/20 text-st-mint border-st-mint/30 text-xs">
-                              Active
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-xs text-st-light/70 mt-1">{getFilterDescription(filterKey)}</p>
-                      </div>
+          {Object.entries(tradePlannerFilters).map(([key, isActive]) => {
+            const filterKey = key as keyof TradePlannerFilters
+            return (
+              <div
+                key={key}
+                className={`p-4 rounded-lg border cursor-pointer transition-all ${
+                  isActive
+                    ? "bg-st-mint/10 border-st-mint/30"
+                    : "bg-st-dark border-st-dark-lighter hover:border-st-mint/20"
+                }`}
+                onClick={() => handleFilterToggle(filterKey)}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-lg ${isActive ? "bg-st-mint/20" : "bg-st-light/10"}`}>
+                      {getFilterIcon(filterKey)}
                     </div>
-                    <Switch
-                      checked={isActive}
-                      onCheckedChange={() => handleFilterToggle(filterKey)}
-                      className="data-[state=checked]:bg-st-mint"
-                    />
+                    <div>
+                      <Label className="text-st-light font-medium">
+                        {filterKey === "lowGasFees"
+                          ? "Only low gas fees"
+                          : filterKey === "stablecoins"
+                          ? "Only stablecoins"
+                          : "Quick trades"}
+                      </Label>
+                      <p className="text-xs text-st-light/70 mt-1">{getFilterDescription(filterKey)}</p>
+                    </div>
                   </div>
+                  <Switch
+                    checked={isActive}
+                    onCheckedChange={() => handleFilterToggle(filterKey)}
+                    className="data-[state=checked]:bg-st-mint"
+                  />
                 </div>
-              )
-            })}
-          </div>
-
-          <Separator className="bg-st-dark-lighter" />
-
-          <div className="bg-st-dark/50 p-4 rounded-lg">
-            <div className="flex items-center gap-2 mb-2">
-              <Check className="h-4 w-4 text-st-mint" />
-              <span className="text-sm font-medium text-st-light">Active Filters Summary</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {Object.entries(tradePlannerFilters)
-                .filter(([, isActive]) => isActive)
-                .map(([key]) => {
-                  const filterLabels = {
-                    lowGasFees: "Low Gas Fees",
-                    stablecoins: "Stablecoins Only",
-                    quickTrades: "Quick Trades",
-                  }
-                  return (
-                    <Badge key={key} variant="secondary" className="bg-st-mint/20 text-st-mint border-st-mint/30">
-                      {filterLabels[key as keyof TradePlannerFilters]}
-                    </Badge>
-                  )
-                })}
-              {Object.values(tradePlannerFilters).every((filter) => !filter) && (
-                <span className="text-sm text-st-light/70">No filters active</span>
-              )}
-            </div>
-          </div>
+              </div>
+            )
+          })}
         </CardContent>
       </Card>
 
@@ -245,14 +203,13 @@ export function SettingsPanel() {
             </div>
             <div>
               <CardTitle className="text-st-light">Wallet</CardTitle>
-              <p className="text-sm text-st-light/70 mt-1">Manage your wallet connection and settings</p>
+              <p className="text-sm text-st-light/70 mt-1">Manage your wallet connection</p>
             </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {isConnected && walletAddress ? (
+          {isConnected && address ? (
             <>
-              {/* Connected Wallet Display */}
               <div className="p-4 bg-st-mint/10 border border-st-mint/30 rounded-lg">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
@@ -269,12 +226,11 @@ export function SettingsPanel() {
                   </Badge>
                 </div>
 
-                {/* Wallet Address */}
                 <div className="bg-st-dark rounded-lg p-3">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs text-st-light/70 mb-1">Wallet Address</p>
-                      <p className="font-mono text-sm text-st-light">{formatAddress(walletAddress)}</p>
+                      <p className="font-mono text-sm text-st-light">{formatAddress(address)}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <Button
@@ -297,7 +253,6 @@ export function SettingsPanel() {
                 </div>
               </div>
 
-              {/* Wallet Actions */}
               <div className="grid gap-3 md:grid-cols-2">
                 <Button
                   onClick={handleReconnectWallet}
@@ -317,44 +272,21 @@ export function SettingsPanel() {
               </div>
             </>
           ) : (
-            <>
-              {/* Disconnected State */}
-              <div className="p-4 bg-st-red/10 border border-st-red/30 rounded-lg text-center">
-                <div className="flex items-center justify-center w-12 h-12 bg-st-red/20 rounded-full mx-auto mb-3">
-                  <Wallet className="h-6 w-6 text-st-red" />
-                </div>
-                <p className="font-medium text-st-light mb-1">No Wallet Connected</p>
-                <p className="text-sm text-st-light/70 mb-4">Connect your wallet to start trading</p>
-                <Button onClick={connectWallet} className="bg-st-mint text-st-dark hover:bg-st-mint/90 font-semibold">
-                  <Wallet className="h-4 w-4 mr-2" />
-                  Connect Wallet
-                </Button>
+            <div className="p-4 bg-st-red/10 border border-st-red/30 rounded-lg text-center">
+              <div className="flex items-center justify-center w-12 h-12 bg-st-red/20 rounded-full mx-auto mb-3">
+                <Wallet className="h-6 w-6 text-st-red" />
               </div>
-            </>
-          )}
-
-          {/* Wallet Info */}
-          <div className="bg-st-dark/50 p-4 rounded-lg">
-            <h4 className="text-sm font-medium text-st-light mb-2">Wallet Information</h4>
-            <div className="space-y-2 text-xs text-st-light/70">
-              <div className="flex items-center justify-between">
-                <span>Network</span>
-                <Badge variant="secondary" className="bg-st-mint/20 text-st-mint border-st-mint/30 text-xs">
-                  Ethereum Mainnet
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span>Connection Type</span>
-                <span>Non-custodial</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span>Security</span>
-                <span className="text-st-mint">🔒 Encrypted</span>
-              </div>
+              <p className="font-medium text-st-light mb-1">No Wallet Connected</p>
+              <p className="text-sm text-st-light/70 mb-4">Connect your wallet to start trading</p>
+              <Button onClick={connectWallet} className="bg-st-mint text-st-dark hover:bg-st-mint/90 font-semibold">
+                <Wallet className="h-4 w-4 mr-2" />
+                Connect Wallet
+              </Button>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
     </div>
   )
 }
+

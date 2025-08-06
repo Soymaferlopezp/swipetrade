@@ -1,9 +1,15 @@
 import { SwapData } from '@/types/swap';
 
-type Props = SwapData & {
-  onConfirm: () => void;
-  onCancel: () => void;
-};
+type Props = {
+  pair: string
+  price: number
+  slippage: number
+  gasFee: number
+  label: string
+  volume: string
+  onCancel: () => void
+  onConfirm: () => void
+}
 
 export default function SwapModal({
   pair,

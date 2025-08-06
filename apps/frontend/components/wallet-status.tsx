@@ -1,31 +1,30 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Check, Wallet } from "lucide-react"
-import { useWallet } from "@/contexts/wallet-context"
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Check, Wallet } from "lucide-react";
+import { useWalletContext } from "@/contexts/wallet-context"; // ✅ Corrección aquí
 
 interface WalletStatusProps {
-  className?: string
+  className?: string;
 }
 
 export function WalletStatus({ className }: WalletStatusProps) {
-  const { isConnected, walletAddress, connectWallet } = useWallet()
+  const { isConnected, address, connectWallet } = useWalletContext(); // ✅ address en vez de walletAddress
 
-  const formatAddress = (address: string) => {
-    return `${address.slice(0, 6)}...${address.slice(-4)}`
-  }
+  const formatAddress = (addr: string) =>
+    `${addr.slice(0, 6)}...${addr.slice(-4)}`;
 
-  if (isConnected && walletAddress) {
+  if (isConnected && address) {
     return (
       <Badge
         variant="secondary"
         className={`bg-st-mint/20 text-st-mint border-st-mint/30 hover:bg-st-mint/30 transition-colors ${className}`}
       >
         <Check className="h-3 w-3 mr-2" />
-        {formatAddress(walletAddress)}
+        {formatAddress(address)}
       </Badge>
-    )
+    );
   }
 
   return (
@@ -37,5 +36,5 @@ export function WalletStatus({ className }: WalletStatusProps) {
       <Wallet className="h-4 w-4 mr-2" />
       Connect Wallet
     </Button>
-  )
+  );
 }

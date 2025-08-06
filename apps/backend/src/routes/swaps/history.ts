@@ -1,51 +1,55 @@
-import express from 'express';
+import express from 'express'
+import { tradeHistory } from '../../data'
 
-const router = express.Router();
+const router = express.Router()
 
-type SwapRecord = {
-  pair: string;
-  base: string;
-  quote: string;
-  price: string;
-  amount: number;
-  action: 'accepted' | 'rejected';
-  status: 'confirmed' | 'rejected';
-  tradeType: 'manual' | 'bot';
-  timestamp: string;
-};
+// GET /api/swaps/history → devuelve el historial completo
+router.get('/', (_req, res) => {
+  res.json(tradeHistory)
+})
 
-const tradeHistory: SwapRecord[] = [];
-
-// POST /api/swaps/history → guardar un swap
+// POST /api/swaps/history → guardar rechazo manual
 router.post('/', (req, res) => {
-  const { pair, base, quote, price, amount, action, status, tradeType, timestamp } = req.body;
-
-  if (!pair || !base || !quote || !price || !amount || !action || !status || !tradeType || !timestamp) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
-
-  const newRecord: SwapRecord = {
+  const {
     pair,
     base,
     quote,
     price,
     amount,
     action,
-    status: 'confirmed',
-    tradeType: 'manual',
+    status,
+    tradeType,
     timestamp,
-  };
+  } = req.body
 
-  tradeHistory.push(newRecord);
+  if (!pair || !price || !action || !status || !timestamp) {
+    return res.status(400).json({
+      success: false,
+      error: 'Missing required fields: pair, price, action, status, timestamp',
+    })
+  }
 
-  res.status(201).json({ message: 'Swap recorded', data: newRecord });
-});
+  const record = {
+    pair,
+    base: base || pair.split('/')[0],
+    quote: quote || pair.split('/')[1],
+    price,
+    amount,
+    action, // "rejected"
+    status, // "rejected"
+    tradeType: tradeType || 'manual',
+    timestamp,
+  }
 
-// GET /api/swaps/history → devolver historial
-router.get('/', (req, res) => {
-  res.json(tradeHistory);
-});
+  tradeHistory.push(record)
+  console.log('📥 Rejected Swap saved:', record)
 
-export default router;
+  return res.status(200).json({
+    success: true,
+    data: record,
+  })
+})
+
+export default router
 
 

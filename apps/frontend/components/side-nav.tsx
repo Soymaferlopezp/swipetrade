@@ -1,145 +1,107 @@
 "use client"
 
-import type * as React from "react"
-import Image from "next/image"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { Smartphone, Bot, History, Settings, LogOut, Check, Wallet } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { useWallet } from "@/contexts/wallet-context"
-
+import { usePathname, useRouter } from "next/navigation"
+import { cn } from "@/lib/utils"
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarRail,
-} from "@/components/ui/sidebar"
+  Bot,
+  LogOut,
+  Settings,
+  Wallet,
+  BarChart2,
+  Activity,
+  Check,
+} from "lucide-react"
+import { useWalletContext } from "@/contexts/wallet-context"
 
-const navigationItems = [
+const navItems = [
   {
-    title: "Swipe",
-    icon: Smartphone,
-    url: "/swipe",
+    name: "Swipe Mode",
+    href: "/swipe",
+    icon: Activity,
   },
   {
-    title: "Bot Mode",
+    name: "Trade History",
+    href: "/trade-history",
+    icon: BarChart2,
+  },
+  {
+    name: "Bot Mode",
+    href: "/bot-mode",
     icon: Bot,
-    url: "/bot-mode",
   },
   {
-    title: "Trade History",
-    icon: History,
-    url: "/trade-history",
-  },
-  {
-    title: "Settings",
+    name: "Settings",
+    href: "/settings",
     icon: Settings,
-    url: "/settings",
   },
 ]
 
-interface SideNavProps extends React.ComponentProps<typeof Sidebar> {}
-
-export function SideNav({ ...props }: SideNavProps) {
-  const { isConnected, walletAddress, connectWallet, disconnectWallet } = useWallet()
+export function SideNav() {
   const pathname = usePathname()
+  const router = useRouter()
+  const { disconnectWallet, isConnected, address } = useWalletContext()
+
+  const handleLogout = () => {
+    disconnectWallet()
+    router.push("/")
+  }
 
   const formatAddress = (address: string) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`
   }
 
   return (
-    <Sidebar className="border-r border-st-dark-lighter" {...props}>
-      <SidebarHeader className="border-b border-st-dark-lighter">
-        <div className="flex items-center gap-3 px-3 py-4">
-          <div className="relative h-10 w-10 overflow-hidden rounded-lg">
-            <Image src="/swipetrade-logo.png" alt="SwipeTrade" fill className="object-cover" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-lg font-bold text-st-light">SwipeTrade</span>
-            <span className="text-xs text-st-light/70">Trading Platform</span>
-          </div>
+    <aside className="bg-st-dark-lighter w-64 h-screen px-6 py-10 flex flex-col border-r border-st-dark text-st-light">
+      {/* Logo */}
+      <div className="mb-10 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl overflow-hidden">
+          <img src="/swipetrade-logo.png" alt="Logo" className="w-full h-full object-cover" />
         </div>
-      </SidebarHeader>
-
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu className="gap-2">
-              {navigationItems.map((item) => {
-                const isActive = pathname === item.url
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={isActive}
-                      className="h-12 text-st-light hover:bg-st-dark-lighter hover:text-st-mint data-[active=true]:bg-st-mint data-[active=true]:text-st-dark font-medium"
-                    >
-                      <Link href={item.url} className="flex items-center gap-3">
-                        <item.icon className="h-5 w-5" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-
-      <SidebarFooter className="border-t border-st-dark-lighter p-4">
-        {/* Dynamic Wallet Section */}
-        <div className="space-y-3">
-          {isConnected && walletAddress ? (
-            <Card className="bg-st-mint/10 border-st-mint/30">
-              <CardContent className="p-3">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center justify-center w-8 h-8 bg-st-mint/20 rounded-full">
-                    <Check className="h-4 w-4 text-st-mint" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-st-light">Wallet Connected</p>
-                    <p className="text-xs text-st-mint font-mono">{formatAddress(walletAddress)}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <Button
-              onClick={connectWallet}
-              className="w-full h-12 bg-st-mint text-st-dark hover:bg-st-mint/90 font-semibold"
-            >
-              <Wallet className="h-5 w-5 mr-2" />
-              Connect Wallet
-            </Button>
-          )}
-
-          {/* Logout Button */}
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                asChild
-                className="h-10 text-st-light hover:bg-st-dark-lighter hover:text-st-red font-medium"
-              >
-                <button onClick={disconnectWallet} className="flex items-center gap-3 w-full">
-                  <LogOut className="h-4 w-4" />
-                  <span>Logout</span>
-                </button>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
+        <div>
+          <h2 className="text-xl font-bold">SwipeTrade</h2>
+          <p className="text-xs text-st-light/70">Dashboard</p>
         </div>
-      </SidebarFooter>
+      </div>
 
-      <SidebarRail />
-    </Sidebar>
+      {/* Navigation Links */}
+      <nav className="flex-1 space-y-2">
+        {navItems.map((item) => (
+          <Link
+            key={item.name}
+            href={item.href}
+            className={cn(
+              "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors hover:bg-st-dark/70",
+              pathname === item.href
+                ? "bg-st-dark text-st-mint font-semibold"
+                : "text-st-light/80"
+            )}
+          >
+            <item.icon className="h-5 w-5" />
+            {item.name}
+          </Link>
+        ))}
+      </nav>
+
+      {/* Footer */}
+      <div className="mt-10 border-t border-st-dark pt-6 space-y-3">
+        {isConnected && address && (
+          <div className="flex items-center gap-3 px-4 py-2 rounded-lg bg-st-dark text-st-mint text-sm font-medium">
+            <Check className="h-4 w-4" />
+            {formatAddress(address)}
+          </div>
+        )}
+
+        {isConnected && (
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 px-4 py-2 rounded-lg text-red-400 hover:bg-red-900/10 transition-all w-full text-sm"
+          >
+            <LogOut className="h-4 w-4" />
+            Log out
+          </button>
+        )}
+      </div>
+    </aside>
   )
 }

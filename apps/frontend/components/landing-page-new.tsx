@@ -3,13 +3,32 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Smartphone, Bot, History, Shield, ArrowRight, Check, Wallet, TrendingUp, Zap } from "lucide-react"
+import {
+  Smartphone,
+  Bot,
+  History,
+  Shield,
+  ArrowRight,
+  Check,
+  Wallet,
+  TrendingUp,
+  Zap,
+} from "lucide-react"
 import Image from "next/image"
-import Link from "next/link"
-import { useWallet } from "@/contexts/wallet-context"
+import { useWalletContext } from "@/contexts/wallet-context"
+import { useRouter } from "next/navigation"
+import { useEffect } from "react"
+import { ConnectButton } from "@rainbow-me/rainbowkit"
 
 export function LandingPageNew() {
-  const { isConnected, walletAddress, connectWallet } = useWallet()
+  const { address, isConnected } = useWalletContext()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (isConnected) {
+      router.push("/swipe")
+    }
+  }, [isConnected, router])
 
   const formatAddress = (address: string) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`
@@ -59,18 +78,15 @@ export function LandingPageNew() {
               </div>
             </div>
 
-            {/* Wallet Connection */}
+            {/* Wallet Connect */}
             <div className="flex items-center gap-4">
-              {isConnected && walletAddress ? (
+              {isConnected && address ? (
                 <Badge variant="secondary" className="bg-st-mint/20 text-st-mint border-st-mint/30">
                   <Check className="h-3 w-3 mr-2" />
-                  {formatAddress(walletAddress)}
+                  {formatAddress(address)}
                 </Badge>
               ) : (
-                <Button onClick={connectWallet} className="bg-st-mint text-st-dark hover:bg-st-mint/90 font-semibold">
-                  <Wallet className="h-4 w-4 mr-2" />
-                  Connect Wallet
-                </Button>
+                <ConnectButton showBalance={false} chainStatus="none" />
               )}
             </div>
           </div>
@@ -82,30 +98,28 @@ export function LandingPageNew() {
         {/* Hero Section */}
         <section className="py-20 text-center">
           <div className="max-w-4xl mx-auto">
-            {/* Hero Badge */}
-            <Badge variant="secondary" className="bg-st-mint/10 text-st-mint border-st-mint/30 mb-8 text-sm px-4 py-2">
+            <Badge
+              variant="secondary"
+              className="bg-st-mint/10 text-st-mint border-st-mint/30 mb-8 text-sm px-4 py-2"
+            >
               <TrendingUp className="h-4 w-4 mr-2" />
               Revolutionary Trading Experience
             </Badge>
 
-            {/* Hero Title */}
             <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-st-light via-st-mint to-st-light bg-clip-text text-transparent">
               SwipeTrade: Trade like you swipe
             </h1>
 
-            {/* Hero Subtitle */}
             <p className="text-xl md:text-2xl text-st-light/80 mb-12 max-w-3xl mx-auto leading-relaxed">
-              Experience the future of trading with our intuitive swipe interface, automated bots, and comprehensive
-              analytics — all in one platform.
+              Experience the future of trading with our intuitive swipe interface, automated bots,
+              and comprehensive analytics — all in one platform.
             </p>
 
-            {/* Hero Illustration */}
             <div className="mb-12 flex justify-center">
               <div className="relative">
                 <div className="w-32 h-32 bg-gradient-to-br from-st-mint/20 to-st-mint/5 rounded-3xl flex items-center justify-center border border-st-mint/20">
                   <Smartphone className="h-16 w-16 text-st-mint" />
                 </div>
-                {/* Floating elements */}
                 <div className="absolute -top-4 -right-4 w-8 h-8 bg-st-mint/20 rounded-full flex items-center justify-center">
                   <Zap className="h-4 w-4 text-st-mint" />
                 </div>
@@ -115,44 +129,25 @@ export function LandingPageNew() {
               </div>
             </div>
 
-            {/* CTA Button */}
             <div className="flex justify-center">
-              {isConnected ? (
-                <Button
-                  asChild
-                  size="lg"
-                  className="bg-st-mint text-st-dark hover:bg-st-mint/90 font-semibold text-lg px-8 py-6 rounded-xl"
-                >
-                  <Link href="/swipe">
-                    Get Started
-                    <ArrowRight className="h-5 w-5 ml-2" />
-                  </Link>
-                </Button>
-              ) : (
-                <Button
-                  onClick={connectWallet}
-                  size="lg"
-                  className="bg-st-mint text-st-dark hover:bg-st-mint/90 font-semibold text-lg px-8 py-6 rounded-xl"
-                >
-                  <Wallet className="h-5 w-5 mr-2" />
-                  Connect Wallet to Start
-                </Button>
-              )}
+              <ConnectButton showBalance={false} chainStatus="none" />
             </div>
 
             {isConnected && (
               <p className="text-sm text-st-mint mt-4 flex items-center justify-center gap-2">
                 <Check className="h-4 w-4" />
-                Wallet connected — Ready to trade!
+                Wallet connected — Redirecting...
               </p>
             )}
           </div>
         </section>
 
-        {/* Features Section */}
+        {/* Features */}
         <section className="py-20">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-st-light mb-4">Why Choose SwipeTrade?</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-st-light mb-4">
+              Why Choose SwipeTrade?
+            </h2>
             <p className="text-lg text-st-light/70 max-w-2xl mx-auto">
               Built for modern traders who demand speed, security, and simplicity
             </p>
@@ -178,9 +173,9 @@ export function LandingPageNew() {
           </div>
         </section>
 
-        {/* Stats Section */}
+        {/* Stats */}
         <section className="py-20">
-          <Card className="bg-gradient-to-r from-st-mint/5 to-st-mint/10 border-st-mint/20">
+          <Card className="bg-st-dark-lighter border-st-dark-lighter">
             <CardContent className="p-12">
               <div className="grid md:grid-cols-3 gap-8 text-center">
                 <div>
@@ -205,7 +200,6 @@ export function LandingPageNew() {
       <footer className="border-t border-st-dark-lighter mt-20">
         <div className="max-w-7xl mx-auto px-6 py-12">
           <div className="text-center">
-            {/* Hackathon Badge */}
             <div className="mb-8">
               <Badge
                 variant="secondary"
@@ -214,8 +208,6 @@ export function LandingPageNew() {
                 🏆 Built for OKX Hackathon — ETHCC 2025
               </Badge>
             </div>
-
-            {/* Partner Logos */}
             <div className="flex items-center justify-center gap-8 mb-8">
               <div className="flex items-center gap-2 text-st-light/70">
                 <div className="w-8 h-8 bg-orange-500/20 rounded-lg flex items-center justify-center">
@@ -223,14 +215,12 @@ export function LandingPageNew() {
                 </div>
                 <span className="text-sm">OKX</span>
               </div>
-
               <div className="flex items-center gap-2 text-st-light/70">
                 <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
                   <span className="text-blue-400 font-bold text-sm">Ξ</span>
                 </div>
                 <span className="text-sm">Ethereum</span>
               </div>
-
               <div className="flex items-center gap-2 text-st-light/70">
                 <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
                   <span className="text-purple-400 font-bold text-sm">DH</span>
@@ -238,8 +228,6 @@ export function LandingPageNew() {
                 <span className="text-sm">DoraHacks</span>
               </div>
             </div>
-
-            {/* Footer Text */}
             <div className="text-st-light/50 text-sm">
               <p>&copy; 2025 SwipeTrade. Built with ❤️ for the future of trading.</p>
             </div>
@@ -249,3 +237,8 @@ export function LandingPageNew() {
     </div>
   )
 }
+
+
+
+
+

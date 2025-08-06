@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { TradeHistoryTable, TradeRecord } from "./trade-history-table"
+import { TradeHistoryTable } from "./trade-history-table"
+import { TradeRecord } from "@/types/trade"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { TrendingUp, Activity, DollarSign } from "lucide-react"
@@ -29,7 +30,7 @@ export function TradeHistoryView() {
               ? "failed"
               : "pending",
           tradeType: item.tradeType || "manual",
-          txHash: undefined,
+          txHash: item.txHash,
         }))
 
         setHistory(formatted)
@@ -133,7 +134,7 @@ export function TradeHistoryView() {
       </div>
 
       {/* Trade History Table */}
-      <TradeHistoryTable/>
+      <TradeHistoryTable />
     </div>
   )
 }

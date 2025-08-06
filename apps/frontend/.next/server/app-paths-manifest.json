@@ -1,5 +1,5 @@
 {
-  "/page": "app/page.js",
   "/swipe/page": "app/swipe/page.js",
+  "/settings/page": "app/settings/page.js",
   "/trade-history/page": "app/trade-history/page.js"
 }

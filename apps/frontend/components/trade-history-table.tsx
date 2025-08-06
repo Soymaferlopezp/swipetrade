@@ -4,22 +4,8 @@ import { useEffect, useMemo, useState } from "react"
 import axios from "axios"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Check, X, Clock, Filter, Download, RefreshCw } from "lucide-react"
-
-export interface TradeRecord {
-  id: string
-  date: Date
-  pair: string
-  executedPrice: number
-  amount: string
-  status: "confirmed" | "failed" | "pending"
-  tradeType: "manual" | "bot"
-  txHash?: string
-}
+import { RefreshCw, Download } from "lucide-react"
+import { TradeRecord } from "@/types/trade"
 
 const tradeTypes = ["All Types", "Manual", "Bot"]
 
@@ -48,7 +34,7 @@ export function TradeHistoryTable() {
               ? "failed"
               : "pending",
           tradeType: item.tradeType || "manual",
-          txHash: item.txHash,
+          txHash: item.txHash || null,
         }))
 
         setTrades(formattedTrades)
@@ -60,22 +46,6 @@ export function TradeHistoryTable() {
 
     fetchTrades()
   }, [])
-
-  const availablePairs = useMemo(() => {
-    const uniquePairs = new Set(trades.map((t) => t.pair))
-    return ["All Pairs", ...Array.from(uniquePairs)]
-  }, [trades])
-
-  const filteredTrades = useMemo(() => {
-    const result = trades.filter((trade) => {
-      const pairMatch = pairFilter === "All Pairs" || trade.pair === pairFilter
-      const typeMatch = typeFilter === "All Types" || trade.tradeType === typeFilter.toLowerCase()
-      const dateMatch = !dateFilter || trade.date.toISOString().split("T")[0] === dateFilter
-      return pairMatch && typeMatch && dateMatch
-    })
-    console.log("filteredTrades:", result)
-    return result
-  }, [trades, pairFilter, typeFilter, dateFilter])
 
   const formatDate = (date: Date) =>
     date.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" })
@@ -95,12 +65,6 @@ export function TradeHistoryTable() {
     }
   }
 
-  const clearFilters = () => {
-    setPairFilter("All Pairs")
-    setTypeFilter("All Types")
-    setDateFilter("")
-  }
-
   return (
     <Card className="bg-st-dark-lighter border-st-dark-lighter">
       <CardHeader>
@@ -113,28 +77,50 @@ export function TradeHistoryTable() {
             <Button variant="outline" size="sm" className="border-st-dark-lighter text-st-light hover:bg-st-dark-lighter bg-transparent">
               <Download className="h-4 w-4 mr-2" /> Export
             </Button>
-            <Button variant="outline" size="sm" className="border-st-dark-lighter text-st-light hover:bg-st-dark-lighter bg-transparent" onClick={clearFilters}>
+            <Button variant="outline" size="sm" className="border-st-dark-lighter text-st-light hover:bg-st-dark-lighter bg-transparent" onClick={() => window.location.reload()}>
               <RefreshCw className="h-4 w-4 mr-2" /> Refresh
             </Button>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-6">
-        {filteredTrades.map((trade) => (
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-6 text-st-light/70 text-sm font-medium border-b border-st-dark pb-2 px-4">
+          <div>Pair</div>
+          <div>Date</div>
+          <div>Amount</div>
+          <div>Price</div>
+          <div>Status</div>
+          <div>Tx Hash</div>
+        </div>
+
+        {trades.map((trade) => (
           <div
             key={trade.id}
-            className="flex justify-between items-center px-4 py-2 border-b border-st-dark"
+            className="grid grid-cols-6 text-sm text-st-light px-4 py-2 border-b border-st-dark items-center"
           >
-            <div className="text-st-light">{trade.pair}</div>
-            <div className="text-st-light/80">{formatDate(trade.date)} {formatTime(trade.date)}</div>
-            <div className="text-st-light">{trade.amount}</div>
-            <div className="text-st-light">{formatPrice(trade.executedPrice)} USDC</div>
-            <div className="text-st-light">{getStatusText(trade.status)}</div>
+            <div>{trade.pair}</div>
+            <div>{formatDate(trade.date)} {formatTime(trade.date)}</div>
+            <div>{trade.amount}</div>
+            <div>{formatPrice(trade.executedPrice)} USDC</div>
+            <div>{getStatusText(trade.status)}</div>
+            <div>
+              {trade.txHash ? (
+                <a
+                  href={`https://sepolia.etherscan.io/tx/${trade.txHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline text-st-mint hover:text-st-mint/80"
+                >
+                  View Tx
+                </a>
+              ) : "—"}
+            </div>
           </div>
         ))}
       </CardContent>
     </Card>
   )
 }
+
 

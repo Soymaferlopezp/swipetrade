@@ -1,9 +1,8 @@
-import { useState } from 'react';
-import { SwapData } from '@/types/swap';
-import SwapModal from './swap-modal';
+import { SwapData } from '@/types/swap'
 
 type Props = SwapData & {
   onNext: () => void;
+  onSwipeRight: (swap: SwapData) => Promise<void>;
 };
 
 export default function SwapCard({
@@ -13,42 +12,61 @@ export default function SwapCard({
   gasFee,
   label,
   volume,
+  timestamp,
   onNext,
+  onSwipeRight
 }: Props) {
-  const [showModal, setShowModal] = useState(false);
-  const [executed, setExecuted] = useState(false);
-
   const [tokenA, tokenB] = pair.split('/');
 
-const recordSwap = async (action: 'accepted' | 'rejected') => {
-  const [base, quote] = pair.split('/');
-  const body = {
-    pair,
-    base,
-    quote,
-    price,
-    amount: parseFloat(volume), // puede usar volume como cantidad aproximada
-    action,
-    status: action === 'accepted' ? 'confirmed' : 'rejected',
-    tradeType: 'manual',
-    timestamp: new Date().toISOString(),
+  const recordSwap = async (action: 'accepted' | 'rejected') => {
+    const [base, quote] = pair.split('/');
+    const body = {
+      pair,
+      base,
+      quote,
+      price,
+      amount: parseFloat(volume),
+      action,
+      status: action === 'accepted' ? 'confirmed' : 'rejected',
+      tradeType: 'manual',
+      timestamp: new Date().toISOString(),
+    };
+
+    try {
+      const res = await fetch('http://localhost:3001/api/swaps/history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      const data = await res.json();
+      console.log(`✅ Swap ${action} recorded (history):`, data);
+
+      window.dispatchEvent(new Event("recent-activity-refresh"));
+    } catch (err) {
+      console.error(`❌ Error saving ${action} swap (history):`, err);
+    }
   };
 
-  try {
-    const res = await fetch('http://localhost:3001/api/swaps/history', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+  const handleAccept = async () => {
+    await recordSwap('accepted');
+    await onSwipeRight({
+      id: crypto.randomUUID(),
+      pair,
+      price,
+      slippage,
+      gasFee,
+      label,
+      volume,
+      type: 'manual',
+      timestamp
     });
+  };
 
-    const data = await res.json();
-    console.log('✅ Swap recorded:', data);
-
-    window.dispatchEvent(new Event("recent-activity-refresh"));
-  } catch (err) {
-    console.error('❌ Error saving swap:', err);
-  }
-};
+  const handleReject = async () => {
+    await recordSwap('rejected');
+    onNext(); // continuar con la siguiente tarjeta
+  };
 
   return (
     <div className="w-full max-w-md mx-auto bg-[#1c1c2c] border border-[#333] rounded-2xl p-6 shadow-lg text-white flex flex-col items-center gap-4">
@@ -79,50 +97,18 @@ const recordSwap = async (action: 'accepted' | 'rejected') => {
 
       <div className="mt-6 flex gap-4 w-full justify-center">
         <button
-          onClick={() => {
-            recordSwap('rejected');
-            onNext();
-          }}
+          onClick={handleReject}
           className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-2 px-6 rounded-lg"
         >
           Reject
         </button>
         <button
-          onClick={() => setShowModal(true)}
+          onClick={handleAccept}
           className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-lg"
         >
           Accept
         </button>
       </div>
-
-      {showModal && (
-        <SwapModal
-          pair={pair}
-          price={price}
-          slippage={slippage}
-          gasFee={gasFee}
-          label={label}
-          volume={volume}
-          onCancel={() => setShowModal(false)}
-          onConfirm={() => {
-            recordSwap('accepted');
-            setShowModal(false);
-            setExecuted(true);
-            setTimeout(() => {
-              onNext();
-              setExecuted(false);
-            }, 1000);
-          }}
-        />
-      )}
-
-      {executed && (
-        <div className="mt-4 text-green-400 text-sm">✅ Swap Executed (Simulado)</div>
-      )}
     </div>
   );
 }
-
-
-
-

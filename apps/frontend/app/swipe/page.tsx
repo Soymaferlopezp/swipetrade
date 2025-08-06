@@ -14,6 +14,7 @@ type SwapRecord = {
   status: string
   tradeType: string
   timestamp: string
+  txHash?: string
 }
 
 export default function SwipePage() {
@@ -24,7 +25,11 @@ export default function SwipePage() {
       try {
         const res = await fetch("http://localhost:3001/api/swaps/history")
         const data = await res.json()
-        const sorted = data.sort(
+        console.log("Raw history data:", data)
+        const filtered = data.filter((swap: SwapRecord) =>
+        swap.status === "confirmed" || swap.status === "rejected"
+      )
+        const sorted = filtered.sort(
           (a: SwapRecord, b: SwapRecord) =>
             new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
         )
@@ -122,7 +127,10 @@ export default function SwipePage() {
             </CardHeader>
             <CardContent className="space-y-4">
               {recentSwaps.map((swap, index) => (
-                <div key={index} className="flex items-center gap-3">
+                <div
+                  key={index}
+                  className="flex items-center gap-3 p-2 rounded-md bg-st-dark border border-st-dark-lighter"
+                >
                   <div
                     className={`w-2 h-2 rounded-full ${
                       swap.action === "accepted" ? "bg-st-mint" : "bg-st-red"
@@ -130,22 +138,31 @@ export default function SwipePage() {
                   ></div>
                   <div className="flex-1">
                     <p className="text-sm text-st-light">
-                      {swap.pair} {swap.action === "accepted" ? "Buy" : "Reject"}
+                      {swap.pair}{" "}
+                      {swap.action === "accepted" ? (
+                        <span className="text-st-mint font-medium">Buy</span>
+                      ) : (
+                        <span className="text-st-red font-medium">Rejected</span>
+                      )}
                     </p>
-                    <p className="text-xs text-st-light/70">
+                    <p className="text-xs text-st-light/60">
                       {new Date(swap.timestamp).toLocaleTimeString([], {
                         hour: "2-digit",
                         minute: "2-digit",
                       })}
                     </p>
+                    {swap.txHash && (
+                      <a
+                        href={`https://sepolia.etherscan.io/tx/${swap.txHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-blue-400 hover:underline"
+                      >
+                        View Tx ↗
+                      </a>
+                    )}
                   </div>
-                  <span
-                    className={`text-sm ${
-                      swap.action === "accepted" ? "text-st-mint" : "text-st-red"
-                    }`}
-                  >
-                    ${swap.price}
-                  </span>
+                  <span className="text-sm text-st-light">${swap.price}</span>
                 </div>
               ))}
             </CardContent>

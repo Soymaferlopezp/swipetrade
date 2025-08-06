@@ -1,15 +1,19 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import "./globals.css"
+import type React from "react";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] })
+import { WalletProvider } from "../lib/wallet";
+import { WalletProviderContext } from '@/contexts/wallet-context'
+import '@rainbow-me/rainbowkit/styles.css';
+
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "SwipeTrade - Next-Gen Trading Platform",
   description: "Revolutionary swipe-based trading interface with automated bots and advanced analytics",
-    generator: 'v0.dev'
-}
+  generator: 'v0.dev'
+};
 
 export default function RootLayout({
   children,
@@ -18,7 +22,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <WalletProvider>
+          <WalletProviderContext>
+            {children}
+          </WalletProviderContext>
+        </WalletProvider>
+      </body>
     </html>
-  )
+  );
 }
+
