@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { TrendingUp, Activity, DollarSign } from "lucide-react"
 import axios from "axios"
+import { API_BASE } from "@/lib/api";
 
 export function TradeHistoryView() {
   const [history, setHistory] = useState<TradeRecord[]>([])
@@ -14,7 +15,7 @@ export function TradeHistoryView() {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const res = await axios.get("http://localhost:3001/api/swaps/history")
+        const res = await axios.get("${API_BASE}/api/swaps/history")
         const raw = res.data
 
         const formatted: TradeRecord[] = raw.map((item: any, index: number) => ({

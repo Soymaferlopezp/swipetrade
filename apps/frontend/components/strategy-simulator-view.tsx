@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
+import { API_BASE } from "@/lib/api";
 
 type SimulationMetrics = {
   totalInvested: number
@@ -41,7 +42,7 @@ export function StrategySimulatorView() {
   }
 
     try {
-      const res = await fetch("http://localhost:3001/api/swaps/simulator", {
+      const res = await fetch(`${API_BASE}/api/swaps/simulator`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ base, quote, amount, frequency , periods }),

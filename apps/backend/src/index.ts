@@ -8,8 +8,11 @@ import pairsRouter from './routes/swaps/pairs';
 
 const app = express();
 
+const PORT = process.env.PORT || 3001;
 
-app.use(cors());
+app.use(cors({
+  origin: ["http://localhost:3000", "https://swipetrade.netlify.app"],
+}));
 app.use(express.json());
 
 app.use('/api/swaps/history', historyRouter);
@@ -40,9 +43,7 @@ app.use('/api/swaps/simulator', simulatorRouter);
 
 app.use('/api/swaps/pairs', pairsRouter);
 
-app.listen(3001, () => {
-  console.log('✅ Backend running on http://localhost:3001');
-});
+app.listen(PORT, () => console.log(`✅ Backend running on :${PORT}`));
 
 
 

@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import SwapCard from './swap-card'
 import { SwapData } from '@/types/swap'
 import { ethers } from 'ethers'
+import { API_BASE } from "@/lib/api";
 
 export default function CardStack() {
   const [recommendations, setRecommendations] = useState<SwapData[]>([])
@@ -15,7 +16,7 @@ export default function CardStack() {
   useEffect(() => {
     const fetchRecommendations = async () => {
       try {
-        const res = await fetch('http://localhost:3001/api/swaps/recommendations')
+        const res = await fetch(`${API_BASE}/api/swaps/recommendations`);
         const data = await res.json()
         setRecommendations(data)
         console.log('📥 DEX Recommendations fetched:', data)
@@ -88,11 +89,11 @@ export default function CardStack() {
 
       console.log('📦 Payload to /execute:', payload)
 
-      const backendRes = await fetch('http://localhost:3001/api/swaps/execute', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const backendRes = await fetch(`${API_BASE}/api/swaps/execute`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-      })
+      });
 
       const backendData = await backendRes.json()
       console.log('🧾 Backend /execute response:', backendData)

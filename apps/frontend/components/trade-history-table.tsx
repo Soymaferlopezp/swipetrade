@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { RefreshCw, Download } from "lucide-react"
 import { TradeRecord } from "@/types/trade"
+import { API_BASE } from "@/lib/api";
 
 const tradeTypes = ["All Types", "Manual", "Bot"]
 
@@ -18,7 +19,7 @@ export function TradeHistoryTable() {
   useEffect(() => {
     const fetchTrades = async () => {
       try {
-        const response = await axios.get("http://localhost:3001/api/swaps/history")
+        const response = await axios.get("`${API_BASE}/api/swaps/history`")
         const data = response.data
 
         const formattedTrades: TradeRecord[] = data.map((item: any, index: number) => ({

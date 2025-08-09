@@ -12,7 +12,6 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "SwipeTrade - Next-Gen Trading Platform",
   description: "Revolutionary swipe-based trading interface with automated bots and advanced analytics",
-  generator: 'v0.dev'
 };
 
 export default function RootLayout({

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { SwapData } from '@/types/swap'
 import SwapModal from './swap-modal'
+import { API_BASE } from "@/lib/api";
 
 type Props = SwapData & {
   onNext: () => void
@@ -38,7 +39,7 @@ export default function SwapCard({
     }
 
     try {
-      const res = await fetch('http://localhost:3001/api/swaps/history', {
+      const res = await fetch(`${API_BASE}/api/swaps/history`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),

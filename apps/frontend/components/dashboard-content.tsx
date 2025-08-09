@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { TrendingUp, TrendingDown, DollarSign, Activity } from "lucide-react"
 import CardStack from "./card-stack"
+import { API_BASE } from "@/lib/api";
 
 type SwapRecord = {
   pair: string
@@ -22,7 +23,7 @@ export function DashboardContent() {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const res = await fetch("http://localhost:3001/api/swaps/history")
+        const res = await fetch(`${API_BASE}/api/swaps/history`);
         const data: SwapRecord[] = await res.json()
         console.log("Raw history data:", data)
 
