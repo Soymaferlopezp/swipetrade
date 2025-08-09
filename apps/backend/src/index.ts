@@ -8,9 +8,9 @@ import pairsRouter from './routes/swaps/pairs';
 
 const app = express();
 
-app.options("*", cors());
 app.use(cors({
   origin: ["http://localhost:3000", "https://swipetrade.vercel.app"],
+  credentials: true,
 }));
 
 
