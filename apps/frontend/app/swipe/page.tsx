@@ -6,6 +6,8 @@ import CardStack from "@/components/card-stack"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { TrendingUp, TrendingDown, DollarSign, Activity } from "lucide-react"
+import { API_BASE } from "@/lib/api";
+
 
 type SwapRecord = {
   pair: string
@@ -23,7 +25,7 @@ export default function SwipePage() {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const res = await fetch("http://localhost:3001/api/swaps/history")
+        const res = await fetch(`${API_BASE}/api/swaps/history`);
         const data = await res.json()
         console.log("Raw history data:", data)
         const filtered = data.filter((swap: SwapRecord) =>
