@@ -1,5 +1,5 @@
-import express from 'express';
 import cors from 'cors';
+import express from 'express';
 import axios from 'axios';
 import historyRouter from './routes/swaps/history';
 import executeRouter from './routes/swaps/execute';
@@ -10,9 +10,25 @@ const app = express();
 
 const PORT = process.env.PORT || 3001;
 
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://swipetrade.vercel.app", ];
+
 app.use(cors({
-  origin: ["http://localhost:3000", "https://swipetrade.vercel.app/"],
+  origin: (origin, callback) => {
+    // permitir Postman/curl (sin origin) y los orígenes de la lista
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error("Not allowed by CORS"));
+  },
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: false,
 }));
+
+app.options("*", cors());
+
 app.use(express.json());
 
 app.use('/api/swaps/history', historyRouter);
@@ -44,6 +60,7 @@ app.use('/api/swaps/simulator', simulatorRouter);
 app.use('/api/swaps/pairs', pairsRouter);
 
 app.listen(PORT, () => console.log(`✅ Backend running on :${PORT}`));
+
 
 
 
