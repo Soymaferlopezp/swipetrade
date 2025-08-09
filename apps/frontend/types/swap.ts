@@ -1,14 +1,17 @@
 export interface SwapData {
-  id: string;
+  id?: string
   pair: string
   price: number
   slippage: number
   gasFee: number
-  label: string   
-  volume: string  
+  label: string
+  volume: string
   timestamp: string
-  type: "manual" | "bot"
+  type: 'manual' | 'bot'
   txHash?: string
-  destinationAddress?: string 
+  destinationAddress?: string
+  base?: string     // ✅ Agregado
+  quote?: string    // ✅ Agregado
 }
+
 

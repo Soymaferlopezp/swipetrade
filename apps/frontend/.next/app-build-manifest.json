@@ -26,15 +26,15 @@
       "static/chunks/main-app.js",
       "static/chunks/app/swipe/page.js"
     ],
+    "/strategy-simulator/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/strategy-simulator/page.js"
+    ],
     "/trade-history/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/trade-history/page.js"
-    ],
-    "/settings/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/settings/page.js"
     ]
   }
 }

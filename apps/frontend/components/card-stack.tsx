@@ -18,10 +18,10 @@ export default function CardStack() {
         const res = await fetch('http://localhost:3001/api/swaps/recommendations')
         const data = await res.json()
         setRecommendations(data)
-        console.log("📥 Recommendations fetched:", data)
+        console.log('📥 DEX Recommendations fetched:', data)
       } catch (err) {
-        console.error("❌ Error fetching recommendations:", err)
-        toast.error("Failed to fetch swap recommendations")
+        console.error('❌ Error fetching recommendations:', err)
+        toast.error('Failed to fetch swap recommendations')
       }
     }
     fetchRecommendations()
@@ -29,57 +29,84 @@ export default function CardStack() {
 
   const handleSwipeRight = async (swap: SwapData) => {
     if (!signer || !isConnected) {
-      toast.error("Wallet not connected")
-      console.warn("⚠️ signer or wallet not available:", { signer, isConnected })
+      toast.error('Wallet not connected')
+      console.warn('⚠️ signer or wallet not available:', { signer, isConnected })
       return
     }
 
     try {
-      const tx = {
-        to: swap.destinationAddress || address,
-        value: ethers.utils.parseEther('0')
+      // --- Derivar SIEMPRE el par desde swap.pair; fallback a base/quote si hiciera falta ---
+      let baseSym = ''
+      let quoteSym = ''
+
+      if (swap?.pair && swap.pair.includes('/')) {
+        const [b, q] = swap.pair.split('/')
+        baseSym = (b || '').toUpperCase()
+        quoteSym = (q || '').toUpperCase()
+      } else {
+        baseSym = (swap as any).base ? String((swap as any).base).toUpperCase() : ''
+        quoteSym = (swap as any).quote ? String((swap as any).quote).toUpperCase() : ''
       }
 
-      console.log("🚀 Preparing transaction with signer:", signer)
-      console.log("📤 Transaction payload:", tx)
+      const canonicalPair =
+        baseSym && quoteSym ? `${baseSym}/${quoteSym}` : (swap.pair || '').toUpperCase()
 
+      console.log('🧩 Pair resolution ->', {
+        incomingSwapPair: swap.pair,
+        baseSym,
+        quoteSym,
+        canonicalPair,
+      })
+
+      // --- Tx simulada / placeholder ---
+      const tx = {
+        to: swap.destinationAddress || address,
+        value: ethers.utils.parseEther('0.0001'), // si quieres cero, pon '0'
+      }
+
+      console.log('🚀 Sending transaction to:', tx.to)
       const transactionResponse = await signer.sendTransaction(tx)
-      console.log("✅ Transaction sent:", transactionResponse)
+      console.log('✅ Transaction sent:', transactionResponse)
 
       await transactionResponse.wait()
-      console.log("⏱ Transaction confirmed")
+      console.log('⏱ Transaction confirmed')
 
+      // --- Payload con par canónico CORRECTO ---
       const payload = {
-        ...swap,
+        pair: canonicalPair,
+        price: swap.price,
+        volume: swap.volume,
+        gasFee: swap.gasFee,
+        slippage: swap.slippage,
+        label: swap.label,
+        destinationAddress: swap.destinationAddress,
         userAddress: address,
         txHash: transactionResponse.hash,
         type: 'manual',
         timestamp: new Date().toISOString(),
       }
 
-      console.log("📦 Payload to backend:", payload)
+      console.log('📦 Payload to /execute:', payload)
 
       const backendRes = await fetch('http://localhost:3001/api/swaps/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       })
 
       const backendData = await backendRes.json()
-      console.log("🧾 Backend response:", backendData)
+      console.log('🧾 Backend /execute response:', backendData)
 
-      toast.success("Swap executed successfully")
+      toast.success('Swap executed successfully')
       setCurrentIndex((prev) => prev + 1)
-      window.dispatchEvent(new Event("recent-activity-refresh"))
+      window.dispatchEvent(new Event('recent-activity-refresh'))
     } catch (error) {
-      console.error("❌ Swap execution failed:", error)
-      toast.error("Swap execution failed")
+      console.error('❌ Swap execution failed:', error)
+      toast.error('Swap execution failed')
     }
   }
 
-  const handleNext = () => {
-    setCurrentIndex((prev) => prev + 1)
-  }
+  const handleNext = () => setCurrentIndex((prev) => prev + 1)
 
   const currentSwap = recommendations[currentIndex]
 
@@ -89,9 +116,9 @@ export default function CardStack() {
         <SwapCard
           {...{
             ...currentSwap,
-            id: currentSwap.id || `${currentSwap.pair}-${currentSwap.timestamp || Date.now()}`, // 🛠 fallback simple
+            id: currentSwap.id || `${currentSwap.pair}-${currentSwap.timestamp || Date.now()}`,
             timestamp: currentSwap.timestamp || new Date().toISOString(),
-            type: "manual"
+            type: 'manual',
           }}
           onNext={handleNext}
           onSwipeRight={handleSwipeRight}

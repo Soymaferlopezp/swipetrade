@@ -10,7 +10,7 @@ type SwapRecord = {
   pair: string
   action: "accepted" | "rejected"
   price: string
-  status: string
+  status: "confirmed" | "rejected" | string
   tradeType: string
   timestamp: string
   txHash?: string
@@ -23,15 +23,19 @@ export function DashboardContent() {
     const fetchHistory = async () => {
       try {
         const res = await fetch("http://localhost:3001/api/swaps/history")
-        const data = await res.json()
+        const data: SwapRecord[] = await res.json()
         console.log("Raw history data:", data)
-        const filtered = data.filter((swap: SwapRecord) =>
-        swap.status === "accept" || swap.status === "rejected"
+
+        // ✅ FIX: filtrar por action (accepted/rejected)
+        const filtered = data.filter(
+          (swap) => swap.action === "accepted" || swap.action === "rejected"
         )
+
         const sorted = filtered.sort(
-          (a: SwapRecord, b: SwapRecord) =>
+          (a, b) =>
             new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
         )
+
         setRecentSwaps(sorted.slice(0, 5))
       } catch (err) {
         console.error("Error fetching recent swaps:", err)
@@ -40,7 +44,15 @@ export function DashboardContent() {
 
     fetchHistory()
     const interval = setInterval(fetchHistory, 5000)
-    return () => clearInterval(interval)
+
+    // (Opcional) escucha para refrescar inmediatamente cuando ejecutas un swap
+    const onRefresh = () => fetchHistory()
+    window.addEventListener("recent-activity-refresh", onRefresh)
+
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener("recent-activity-refresh", onRefresh)
+    }
   }, [])
 
   return (
@@ -66,7 +78,9 @@ export function DashboardContent() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card className="bg-st-dark-lighter border-st-dark-lighter">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-st-light">Total Balance</CardTitle>
+              <CardTitle className="text-sm font-medium text-st-light">
+                Total Balance
+              </CardTitle>
               <DollarSign className="h-4 w-4 text-st-mint" />
             </CardHeader>
             <CardContent>
@@ -80,7 +94,9 @@ export function DashboardContent() {
 
           <Card className="bg-st-dark-lighter border-st-dark-lighter">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-st-light">Active Trades</CardTitle>
+              <CardTitle className="text-sm font-medium text-st-light">
+                Active Trades
+              </CardTitle>
               <Activity className="h-4 w-4 text-st-mint" />
             </CardHeader>
             <CardContent>
@@ -91,7 +107,9 @@ export function DashboardContent() {
 
           <Card className="bg-st-dark-lighter border-st-dark-lighter">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-st-light">Today's P&L</CardTitle>
+              <CardTitle className="text-sm font-medium text-st-light">
+                Today&apos;s P&L
+              </CardTitle>
               <TrendingUp className="h-4 w-4 text-st-mint" />
             </CardHeader>
             <CardContent>
@@ -102,7 +120,9 @@ export function DashboardContent() {
 
           <Card className="bg-st-dark-lighter border-st-dark-lighter">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-st-light">Win Rate</CardTitle>
+              <CardTitle className="text-sm font-medium text-st-light">
+                Win Rate
+              </CardTitle>
               <TrendingDown className="h-4 w-4 text-st-red" />
             </CardHeader>
             <CardContent>
@@ -132,8 +152,7 @@ export function DashboardContent() {
                     className={`w-2 h-2 rounded-full ${
                       swap.action === "accepted" ? "bg-st-mint" : "bg-st-red"
                     }`}
-                  ></div>
-
+                  />
                   <div className="flex-1">
                     <p className="text-sm text-st-light">
                       {swap.pair}{" "}
@@ -160,7 +179,6 @@ export function DashboardContent() {
                       </a>
                     )}
                   </div>
-
                   <span className="text-sm text-st-light">${swap.price}</span>
                 </div>
               ))}

@@ -1,4 +1,7 @@
-import { SwapData } from '@/types/swap';
+'use client'
+
+import { useState } from 'react'
+import { SwapData } from '@/types/swap'
 
 type Props = {
   pair: string
@@ -8,7 +11,7 @@ type Props = {
   label: string
   volume: string
   onCancel: () => void
-  onConfirm: () => void
+  onConfirm: () => Promise<void>
 }
 
 export default function SwapModal({
@@ -19,6 +22,20 @@ export default function SwapModal({
   onCancel,
   onConfirm,
 }: Props) {
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleConfirm = async () => {
+    if (isSubmitting) return
+    setIsSubmitting(true)
+    try {
+      await onConfirm()
+    } catch (err) {
+      console.error('❌ Error on confirm:', err)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
       <div className="bg-[#1c1c2c] p-6 rounded-xl w-full max-w-md shadow-lg text-white space-y-4">
@@ -35,17 +52,24 @@ export default function SwapModal({
           <button
             onClick={onCancel}
             className="px-4 py-2 rounded bg-gray-600 hover:bg-gray-700"
+            disabled={isSubmitting}
           >
             Cancel
           </button>
           <button
-            onClick={onConfirm}
-            className="px-4 py-2 rounded bg-green-500 hover:bg-green-600"
+            onClick={handleConfirm}
+            disabled={isSubmitting}
+            className={`px-4 py-2 rounded ${
+              isSubmitting
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-green-500 hover:bg-green-600'
+            }`}
           >
-            Confirm Swap
+            {isSubmitting ? 'Processing...' : 'Confirm Swap'}
           </button>
         </div>
       </div>
     </div>
-  );
+  )
 }
+

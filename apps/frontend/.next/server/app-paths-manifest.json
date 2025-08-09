@@ -1,5 +1,5 @@
 {
   "/swipe/page": "app/swipe/page.js",
-  "/settings/page": "app/settings/page.js",
-  "/trade-history/page": "app/trade-history/page.js"
+  "/trade-history/page": "app/trade-history/page.js",
+  "/strategy-simulator/page": "app/strategy-simulator/page.js"
 }

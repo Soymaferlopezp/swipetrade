@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Bot, Square, Clock, TrendingUp, Shield, Zap } from "lucide-react"
 
-interface BotSession {
+export interface BotSession {
   startTime: Date
   swapCount: number
   successfulSwaps: number
@@ -23,6 +23,7 @@ interface BotStatusBarProps {
 export function BotStatusBar({ isActive, session, onStopBot }: BotStatusBarProps) {
   const [currentTime, setCurrentTime] = useState(new Date())
 
+  // 🔹 Timer para actualizar el tiempo en vivo
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date())
@@ -31,10 +32,11 @@ export function BotStatusBar({ isActive, session, onStopBot }: BotStatusBarProps
     return () => clearInterval(timer)
   }, [])
 
+  // 🔹 Si no hay sesión activa, no mostramos nada
   if (!isActive || !session) return null
 
   const formatTime = (date: Date) => {
-    return date.toLocaleTimeString("en-US", {
+    return new Date(date).toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
@@ -42,7 +44,7 @@ export function BotStatusBar({ isActive, session, onStopBot }: BotStatusBarProps
   }
 
   const getSessionDuration = () => {
-    const diff = currentTime.getTime() - session.startTime.getTime()
+    const diff = currentTime.getTime() - new Date(session.startTime).getTime()
     const minutes = Math.floor(diff / 60000)
     const hours = Math.floor(minutes / 60)
 
@@ -61,7 +63,7 @@ export function BotStatusBar({ isActive, session, onStopBot }: BotStatusBarProps
     <Card className="bg-st-mint/10 border-st-mint/30 shadow-lg">
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
-          {/* Left Section - Status Info */}
+          {/* Left Section */}
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <div className="relative">
@@ -71,7 +73,10 @@ export function BotStatusBar({ isActive, session, onStopBot }: BotStatusBarProps
               <div>
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-st-light">Bot Active</span>
-                  <Badge variant="secondary" className="bg-st-mint/20 text-st-mint border-st-mint/30 text-xs">
+                  <Badge
+                    variant="secondary"
+                    className="bg-st-mint/20 text-st-mint border-st-mint/30 text-xs"
+                  >
                     LIVE
                   </Badge>
                 </div>
@@ -81,7 +86,7 @@ export function BotStatusBar({ isActive, session, onStopBot }: BotStatusBarProps
               </div>
             </div>
 
-            {/* Stats */}
+            {/* Stats Desktop */}
             <div className="hidden md:flex items-center gap-6">
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-st-mint" />
@@ -102,14 +107,16 @@ export function BotStatusBar({ isActive, session, onStopBot }: BotStatusBarProps
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-st-light/70" />
                 <div>
-                  <p className="text-sm font-medium text-st-light">{session.currentPairs.length} pairs</p>
+                  <p className="text-sm font-medium text-st-light">
+                    {session.currentPairs.length} pairs
+                  </p>
                   <p className="text-xs text-st-light/70">Active trading</p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right Section - Controls */}
+          {/* Right Section */}
           <div className="flex items-center gap-3">
             <Button
               onClick={onStopBot}
@@ -123,7 +130,7 @@ export function BotStatusBar({ isActive, session, onStopBot }: BotStatusBarProps
           </div>
         </div>
 
-        {/* Mobile Stats */}
+        {/* Stats Mobile */}
         <div className="md:hidden mt-3 pt-3 border-t border-st-mint/20">
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
@@ -152,3 +159,4 @@ export function BotStatusBar({ isActive, session, onStopBot }: BotStatusBarProps
     </Card>
   )
 }
+

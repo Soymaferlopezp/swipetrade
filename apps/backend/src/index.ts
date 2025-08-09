@@ -2,15 +2,17 @@ import express from 'express';
 import cors from 'cors';
 import axios from 'axios';
 import historyRouter from './routes/swaps/history';
-import executeRouter from './routes/swaps/execute'
+import executeRouter from './routes/swaps/execute';
+import simulatorRouter from './routes/swaps/simulator';
+import pairsRouter from './routes/swaps/pairs';
 
 const app = express();
+
 
 app.use(cors());
 app.use(express.json());
 
 app.use('/api/swaps/history', historyRouter);
-
 
 app.get('/api/swaps/recommendations', async (req, res) => {
   try {
@@ -34,7 +36,15 @@ app.get('/api/swaps/recommendations', async (req, res) => {
 
 app.use('/api/swaps/execute', executeRouter)
 
+app.use('/api/swaps/simulator', simulatorRouter);
+
+app.use('/api/swaps/pairs', pairsRouter);
 
 app.listen(3001, () => {
   console.log('✅ Backend running on http://localhost:3001');
 });
+
+
+
+
+

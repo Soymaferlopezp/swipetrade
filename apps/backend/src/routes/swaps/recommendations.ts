@@ -1,21 +1,22 @@
-import express from 'express';
+import express from 'express'
+import { fetchDEXQuotes } from '../../services/okxService'
 
-const router = express.Router();
+const router = express.Router()
 
-router.get('/', (req, res) => {
-  const recommendations = [
-    {
-      pair: 'SOL/USDT',
-      price: '177.79',
-      slippage: '0.98',
-      gasFee: '0.01',
-      label: 'Live Market',
-      volume: '1003978.73',
-    },
-    // otros swaps mock
-  ];
+router.get('/', async (_req, res) => {
+  try {
+    const recommendations = await fetchDEXQuotes('50') // 50 USDT como cantidad simulada
+    res.json(recommendations)
+  } catch (err) {
+    console.error('❌ Failed to fetch DEX recommendations')
+    res.status(500).json({ error: 'Failed to fetch swap recommendations' })
+  }
+})
 
-  res.json(recommendations);
-});
+export default router
 
-export default router;
+
+
+
+
+

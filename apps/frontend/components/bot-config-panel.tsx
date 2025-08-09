@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Bot, Settings, TrendingUp, Clock, DollarSign, Zap, X } from "lucide-react"
 
@@ -25,7 +24,7 @@ const sessionDurations = [
   { value: "24h", label: "24 hours" },
 ]
 
-interface BotConfig {
+export interface BotConfig {
   isActive: boolean
   selectedPairs: string[]
   targetPriceType: "max" | "min"
@@ -70,12 +69,17 @@ export function BotConfigPanel({ onStartBot, isDisabled = false }: BotConfigPane
   }
 
   const handleStartBot = () => {
-    if (config.selectedPairs.length > 0 && config.targetPrice && config.amountPerTrade) {
+    if (isFormValid) {
       onStartBot({ ...config, isActive: true })
     }
   }
 
-  const isFormValid = config.selectedPairs.length > 0 && config.targetPrice && config.amountPerTrade
+  const isFormValid =
+    config.selectedPairs.length > 0 &&
+    !!config.targetPrice &&
+    !!config.amountPerTrade &&
+    Number(config.targetPrice) > 0 &&
+    Number(config.amountPerTrade) > 0
 
   return (
     <Card className="bg-st-dark-lighter border-st-dark-lighter">
@@ -86,7 +90,9 @@ export function BotConfigPanel({ onStartBot, isDisabled = false }: BotConfigPane
           </div>
           <div>
             <CardTitle className="text-st-light">Bot Configuration</CardTitle>
-            <CardDescription className="text-st-light/70">Set up your automated trading parameters</CardDescription>
+            <CardDescription className="text-st-light/70">
+              Set up your automated trading parameters
+            </CardDescription>
           </div>
         </div>
       </CardHeader>
@@ -113,7 +119,6 @@ export function BotConfigPanel({ onStartBot, isDisabled = false }: BotConfigPane
         <div className="space-y-3">
           <Label className="text-st-light font-medium">Trading Pairs</Label>
           <div className="space-y-2">
-            {/* Selected Pairs */}
             {config.selectedPairs.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {config.selectedPairs.map((pair) => (
@@ -132,7 +137,7 @@ export function BotConfigPanel({ onStartBot, isDisabled = false }: BotConfigPane
               </div>
             )}
 
-            {/* Pair Selection */}
+            {/* Pair Selection Dropdown */}
             <div className="relative">
               <Button
                 variant="outline"
@@ -156,7 +161,7 @@ export function BotConfigPanel({ onStartBot, isDisabled = false }: BotConfigPane
                           <input
                             type="checkbox"
                             checked={config.selectedPairs.includes(pair.value)}
-                            onChange={() => {}}
+                            readOnly
                             className="rounded border-st-dark-lighter"
                           />
                           <span className="text-st-light text-sm">{pair.label}</span>
@@ -167,8 +172,8 @@ export function BotConfigPanel({ onStartBot, isDisabled = false }: BotConfigPane
                             pair.volume === "High"
                               ? "bg-st-mint/20 text-st-mint"
                               : pair.volume === "Medium"
-                                ? "bg-yellow-500/20 text-yellow-400"
-                                : "bg-st-light/20 text-st-light"
+                              ? "bg-yellow-500/20 text-yellow-400"
+                              : "bg-st-light/20 text-st-light"
                           }`}
                         >
                           {pair.volume}
@@ -186,31 +191,21 @@ export function BotConfigPanel({ onStartBot, isDisabled = false }: BotConfigPane
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label className="text-st-light font-medium">Price Target</Label>
-            <Select
+            <select
               value={config.targetPriceType}
-              onValueChange={(value: "max" | "min") => setConfig((prev) => ({ ...prev, targetPriceType: value }))}
+              onChange={(e) =>
+                setConfig((prev) => ({
+                  ...prev,
+                  targetPriceType: e.target.value as "max" | "min",
+                }))
+              }
               disabled={isDisabled}
+              className="border-st-dark-lighter text-st-light bg-st-dark p-2 rounded"
             >
-              <SelectTrigger className="border-st-dark-lighter text-st-light bg-st-dark">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-st-dark border-st-dark-lighter">
-                <SelectItem value="max" className="text-st-light">
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4 text-st-mint" />
-                    Max Price
-                  </div>
-                </SelectItem>
-                <SelectItem value="min" className="text-st-light">
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4 text-st-red rotate-180" />
-                    Min Price
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
+              <option value="max">Max Price</option>
+              <option value="min">Min Price</option>
+            </select>
           </div>
-
           <div className="space-y-2">
             <Label className="text-st-light font-medium">Target Value</Label>
             <Input
@@ -264,22 +259,18 @@ export function BotConfigPanel({ onStartBot, isDisabled = false }: BotConfigPane
             <Clock className="h-4 w-4 text-st-light/70" />
             Session Duration
           </Label>
-          <Select
+          <select
             value={config.sessionDuration}
-            onValueChange={(value) => setConfig((prev) => ({ ...prev, sessionDuration: value }))}
+            onChange={(e) => setConfig((prev) => ({ ...prev, sessionDuration: e.target.value }))}
             disabled={isDisabled}
+            className="border-st-dark-lighter text-st-light bg-st-dark p-2 rounded"
           >
-            <SelectTrigger className="border-st-dark-lighter text-st-light bg-st-dark">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="bg-st-dark border-st-dark-lighter">
-              {sessionDurations.map((duration) => (
-                <SelectItem key={duration.value} value={duration.value} className="text-st-light">
-                  {duration.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            {sessionDurations.map((duration) => (
+              <option key={duration.value} value={duration.value}>
+                {duration.label}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Start Bot Button */}
@@ -292,7 +283,6 @@ export function BotConfigPanel({ onStartBot, isDisabled = false }: BotConfigPane
           Start Bot
         </Button>
 
-        {/* Form Validation Message */}
         {!isFormValid && (
           <p className="text-sm text-st-light/70 text-center">
             Please select trading pairs, set target price, and amount per trade to continue

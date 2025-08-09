@@ -121,8 +121,6 @@ export default function SwipePage() {
 
           <Card className="bg-st-dark-lighter border-st-dark-lighter">
             <CardHeader>
-              
-              
               <CardTitle className="text-st-light">Recent Activity</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -135,7 +133,7 @@ export default function SwipePage() {
                     className={`w-2 h-2 rounded-full ${
                       swap.action === "accepted" ? "bg-st-mint" : "bg-st-red"
                     }`}
-                  ></div>
+                  />
                   <div className="flex-1">
                     <p className="text-sm text-st-light">
                       {swap.pair}{" "}

@@ -25,6 +25,11 @@ const navItems = [
     href: "/trade-history",
     icon: BarChart2,
   },
+    {
+    name: "Strategy Simulator",
+    href: "/strategy-simulator",
+    icon: Activity,
+  },
   {
     name: "Bot Mode",
     href: "/bot-mode",

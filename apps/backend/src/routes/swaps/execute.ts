@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { tradeHistory } from '../../data'
 
 const executeRouter = Router()
+
 executeRouter.post('/', (req, res) => {
   const {
     pair,
@@ -12,11 +13,12 @@ executeRouter.post('/', (req, res) => {
     label,
     txHash,
     userAddress,
+    destinationAddress,
     type,
     timestamp,
   } = req.body
 
-  // 🛡 Validación básica
+  // Validación básica
   if (!txHash || !userAddress || !pair || !timestamp) {
     return res.status(400).json({
       success: false,
@@ -24,15 +26,18 @@ executeRouter.post('/', (req, res) => {
     })
   }
 
+  const [base, quote] = pair.split('/')
+
   const record = {
     pair,
+    base,
+    quote,
     price,
     amount: volume,
-    base: pair.split('/')[0],
-    quote: pair.split('/')[1],
     gasFee,
     slippage,
     label,
+    destinationAddress,
     txHash,
     userAddress,
     tradeType: type || 'manual',
@@ -51,4 +56,5 @@ executeRouter.post('/', (req, res) => {
 })
 
 export default executeRouter
+
 

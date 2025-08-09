@@ -29,57 +29,51 @@ export function BotModeView() {
   const [botActive, setBotActive] = useState(false)
   const [botSession, setBotSession] = useState<BotSession | null>(null)
 
-  const handleStartBot = (config: BotConfig) => {
-    setBotActive(true)
-    setBotSession({
-      startTime: new Date(),
-      swapCount: 0,
-      successfulSwaps: 0,
-      totalVolume: "0.00 ETH",
-      currentPairs: config.selectedPairs,
-    })
-
-    // Simulate bot activity
-    simulateBotActivity()
-  }
-
-  const handleStopBot = () => {
-    setBotActive(false)
-    setBotSession(null)
-  }
-
-  const simulateBotActivity = () => {
-    const interval = setInterval(() => {
-      setBotSession((prev) => {
-        if (!prev) return null
-
-        // Random chance of executing a swap (20% every 10 seconds)
-        if (Math.random() < 0.2) {
-          const successful = Math.random() > 0.15 // 85% success rate
-          const newSwapCount = prev.swapCount + 1
-          const newSuccessfulSwaps = successful ? prev.successfulSwaps + 1 : prev.successfulSwaps
-          const volumeIncrease = Math.random() * 0.1 + 0.05 // 0.05-0.15 ETH per swap
-          const currentVolume = Number.parseFloat(prev.totalVolume.split(" ")[0])
-          const newVolume = (currentVolume + volumeIncrease).toFixed(2)
-
-          return {
-            ...prev,
-            swapCount: newSwapCount,
-            successfulSwaps: newSuccessfulSwaps,
-            totalVolume: `${newVolume} ETH`,
-          }
-        }
-
-        return prev
+  // 🔹 Iniciar Bot (llamando backend real)
+  const handleStartBot = async (config: BotConfig) => {
+    try {
+      const res = await fetch("http://localhost:3001/api/swaps/bot/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pairs: config.selectedPairs.map(p => p.replace("/", "-")), // OKX usa guiones
+          targetPriceType: config.targetPriceType,
+          targetPrice: Number(config.targetPrice),
+          maxSlippage: config.maxSlippage,
+          amountPerTrade: config.amountPerTrade,
+          userAddress: "0x0000000000000000000000000000000000000000" // TODO: conectar wallet
+        })
       })
-    }, 10000) // Check every 10 seconds
 
-    // Clean up interval when bot stops
-    if (!botActive) {
-      clearInterval(interval)
+      if (!res.ok) throw new Error("Error starting bot")
+
+      setBotActive(true)
+      setBotSession({
+        startTime: new Date(),
+        swapCount: 0,
+        successfulSwaps: 0,
+        totalVolume: "0.00 ETH",
+        currentPairs: config.selectedPairs,
+      })
+    } catch (error) {
+      console.error("[BOT MODE] Error starting bot:", error)
     }
+  }
 
-    return () => clearInterval(interval)
+  // 🔹 Detener Bot (llamando backend real)
+  const handleStopBot = async () => {
+    try {
+      const res = await fetch("http://localhost:3001/api/swaps/bot/stop", {
+        method: "POST"
+      })
+
+      if (!res.ok) throw new Error("Error stopping bot")
+
+      setBotActive(false)
+      setBotSession(null)
+    } catch (error) {
+      console.error("[BOT MODE] Error stopping bot:", error)
+    }
   }
 
   return (
@@ -102,8 +96,10 @@ export function BotModeView() {
         </Badge>
       </div>
 
-      {/* Bot Status Bar - Only visible when active */}
-      {botActive && <BotStatusBar isActive={botActive} session={botSession} onStopBot={handleStopBot} />}
+      {/* Bot Status Bar */}
+      {botActive && (
+        <BotStatusBar isActive={botActive} session={botSession} onStopBot={handleStopBot} />
+      )}
 
       {/* Main Content */}
       <div className="grid gap-6 lg:grid-cols-3">
