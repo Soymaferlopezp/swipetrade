@@ -1,5 +1,5 @@
-import express from 'express';
 import cors from 'cors';
+import express from 'express';
 import axios from 'axios';
 import historyRouter from './routes/swaps/history';
 import executeRouter from './routes/swaps/execute';
@@ -8,11 +8,12 @@ import pairsRouter from './routes/swaps/pairs';
 
 const app = express();
 
-const PORT = process.env.PORT || 3001;
-
+app.options("*", cors());
 app.use(cors({
-  origin: ["http://localhost:3000", "https://swipetrade.netlify.app"],
+  origin: ["http://localhost:3000", "https://swipetrade.vercel.app"],
 }));
+
+
 app.use(express.json());
 
 app.use('/api/swaps/history', historyRouter);
@@ -43,7 +44,14 @@ app.use('/api/swaps/simulator', simulatorRouter);
 
 app.use('/api/swaps/pairs', pairsRouter);
 
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`✅ Backend running on :${PORT}`));
+
+
+
+
+
+
 
 
 
