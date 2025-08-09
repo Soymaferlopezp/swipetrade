@@ -17,19 +17,6 @@ app.use(cors({
   ],
 }));
 
-app.use(cors({
-  origin: (origin, callback) => {
-    // permitir Postman/curl (sin origin) y los orígenes de la lista
-    if (!origin || allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    return callback(new Error("Not allowed by CORS"));
-  },
-  methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: false,
-}));
-
 app.options("*", cors());
 
 app.use(express.json());
