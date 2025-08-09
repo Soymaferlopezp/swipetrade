@@ -10,9 +10,12 @@ const app = express();
 
 const PORT = process.env.PORT || 3001;
 
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://swipetrade.vercel.app", ];
+app.use(cors({
+  origin: [
+    "http://localhost:3000",
+    "https://swipetrade.vercel.app",
+  ],
+}));
 
 app.use(cors({
   origin: (origin, callback) => {
