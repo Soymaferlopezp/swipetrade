@@ -1,7 +1,8 @@
 {
   "dependencies": {
     "@types/crypto-js": "^4.2.2",
-    "axios": "^1.11.0"
+    "axios": "^1.11.0",
+    "cors": "^2.8.5"
   },
   "devDependencies": {
     "@types/axios": "^0.14.4",
