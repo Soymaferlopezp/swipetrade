@@ -5,15 +5,16 @@ import historyRouter from './routes/swaps/history';
 import executeRouter from './routes/swaps/execute';
 import simulatorRouter from './routes/swaps/simulator';
 import pairsRouter from './routes/swaps/pairs';
+import recommendationsRouter from './routes/swaps/recommendations';
 
 const app = express();
 
-// ✅ CORRECCIÓN: Usa una configuración de CORS más robusta
 app.use(cors({
   origin: [
-    "http://localhost:3000", 
+    "http://localhost:3000",
     "https://swipetrade.vercel.app",
-    "https://swipetrade-medicenmafer221-5173s-projects.vercel.app"
+    "https://swipetrade-medicenmafer221-5173s-projects.vercel.app",
+    "https://swipetrade-lxwo.onrender.com"
   ],
   credentials: true,
 }));
@@ -27,6 +28,7 @@ app.use('/api/swaps/history', historyRouter);
 app.use('/api/swaps/execute', executeRouter);
 app.use('/api/swaps/simulator', simulatorRouter);
 app.use('/api/swaps/pairs', pairsRouter);
+app.use('/api/swaps/recommendations', recommendationsRouter);
 
 app.get('/api/swaps/recommendations', async (_req, res) => {
   try {
