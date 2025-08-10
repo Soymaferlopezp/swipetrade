@@ -5,7 +5,7 @@ import "./globals.css";
 
 
 import { WalletProvider } from "../lib/wallet"; 
-
+import { HydratedProvider } from "@/contexts/HydratedProvider"; 
 
 import '@rainbow-me/rainbowkit/styles.css';
 
@@ -24,12 +24,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        
-        
+        {/* ⚠️ Envuelve el WalletProvider con el HydratedProvider */}
+        <HydratedProvider>
           <WalletProvider>
             {children}
           </WalletProvider>
-       
+        </HydratedProvider>
       </body>
     </html>
   );
