@@ -4,10 +4,12 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Wallet, Smartphone, Bot, TrendingUp } from "lucide-react"
 import Image from "next/image"
-import { useWallet } from "@/contexts/wallet-context"
+
+// ⚠️ Importa el hook de RainbowKit
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 export function LandingPage() {
-  const { connectWallet } = useWallet()
+  // ⚠️ Ya no necesitamos useWallet. La conexión se maneja con ConnectButton
 
   return (
     <div className="min-h-screen bg-st-dark flex items-center justify-center p-6">
@@ -31,41 +33,7 @@ export function LandingPage() {
 
         {/* Features */}
         <div className="grid md:grid-cols-3 gap-6 mb-12">
-          <Card className="bg-st-dark-lighter border-st-dark-lighter text-center">
-            <CardHeader>
-              <Smartphone className="h-12 w-12 text-st-mint mx-auto mb-4" />
-              <CardTitle className="text-st-light">Swipe Trading</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="text-st-light/70">
-                Revolutionary swipe-based interface for lightning-fast trading decisions
-              </CardDescription>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-st-dark-lighter border-st-dark-lighter text-center">
-            <CardHeader>
-              <Bot className="h-12 w-12 text-st-mint mx-auto mb-4" />
-              <CardTitle className="text-st-light">Bot Mode</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="text-st-light/70">
-                Automated trading bots that work 24/7 to maximize your profits
-              </CardDescription>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-st-dark-lighter border-st-dark-lighter text-center">
-            <CardHeader>
-              <TrendingUp className="h-12 w-12 text-st-mint mx-auto mb-4" />
-              <CardTitle className="text-st-light">Advanced Analytics</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="text-st-light/70">
-                Real-time insights and comprehensive trade history tracking
-              </CardDescription>
-            </CardContent>
-          </Card>
+          {/* ... (Tu código de Features aquí) ... */}
         </div>
 
         {/* Connect Wallet CTA */}
@@ -79,14 +47,72 @@ export function LandingPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button
-                onClick={connectWallet}
-                size="lg"
-                className="w-full bg-st-mint text-st-dark hover:bg-st-mint/90 font-semibold text-lg py-6"
-              >
-                <Wallet className="h-5 w-5 mr-2" />
-                Connect Wallet
-              </Button>
+              {/* ⚠️ Reemplazamos el botón por el componente de RainbowKit */}
+              <ConnectButton.Custom>
+                {({
+                  account,
+                  chain,
+                  openAccountModal,
+                  openChainModal,
+                  openConnectModal,
+                  mounted,
+                }) => {
+                  return (
+                    <div
+                      {...(!mounted && {
+                        'aria-hidden': true,
+                        'style': {
+                          opacity: 0,
+                          pointerEvents: 'none',
+                          userSelect: 'none',
+                        },
+                      })}
+                    >
+                      {(() => {
+                        if (!mounted || !account || !chain) {
+                          return (
+                            <Button
+                              onClick={openConnectModal}
+                              size="lg"
+                              className="w-full bg-st-mint text-st-dark hover:bg-st-mint/90 font-semibold text-lg py-6"
+                            >
+                              <Wallet className="h-5 w-5 mr-2" />
+                              Connect Wallet
+                            </Button>
+                          );
+                        }
+
+                        if (chain.unsupported) {
+                          return (
+                            <Button
+                              onClick={openChainModal}
+                              size="lg"
+                              className="w-full bg-red-600 text-st-light hover:bg-red-700 font-semibold text-lg py-6"
+                            >
+                              Wrong network
+                            </Button>
+                          );
+                        }
+                        
+                        return (
+                          // Si ya está conectado y en la red correcta, no mostramos el botón
+                          // Podemos mostrar el componente de cuenta aquí si quieres
+                          // Por ahora, lo dejamos vacío para que el usuario sea redirigido a la app
+                          <Button
+                            onClick={openAccountModal}
+                            size="lg"
+                            className="w-full bg-st-mint text-st-dark hover:bg-st-mint/90 font-semibold text-lg py-6"
+                          >
+                            <Wallet className="h-5 w-5 mr-2" />
+                            Wallet Connected
+                          </Button>
+                        );
+
+                      })()}
+                    </div>
+                  );
+                }}
+              </ConnectButton.Custom>
             </CardContent>
           </Card>
         </div>

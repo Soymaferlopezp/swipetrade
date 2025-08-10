@@ -3,9 +3,9 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
-// ⚠️ Usamos solo el provider de Wagmi/RainbowKit
+
 import { WalletProvider } from "../lib/wallet"; 
-import { HydratedProvider } from "@/contexts/HydratedProvider"; // Importa el nuevo componente
+import { HydratedProvider } from "@/contexts/HydratedProvider"; 
 
 import '@rainbow-me/rainbowkit/styles.css';
 

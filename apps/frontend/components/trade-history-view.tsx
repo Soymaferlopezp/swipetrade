@@ -15,7 +15,7 @@ export function TradeHistoryView() {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const res = await axios.get("${API_BASE}/api/swaps/history")
+        const res = await axios.get(`${API_BASE}/api/swaps/history`)
         const raw = res.data
 
         const formatted: TradeRecord[] = raw.map((item: any, index: number) => ({

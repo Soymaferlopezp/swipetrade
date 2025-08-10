@@ -6,6 +6,7 @@ import { BotStatusBar } from "./bot-status-bar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Zap, TrendingUp, Clock } from "lucide-react"
+import { API_BASE } from "@/lib/api";
 
 interface BotConfig {
   isActive: boolean
@@ -32,16 +33,16 @@ export function BotModeView() {
   // 🔹 Iniciar Bot (llamando backend real)
   const handleStartBot = async (config: BotConfig) => {
     try {
-      const res = await fetch("http://localhost:3001/api/swaps/bot/start", {
+      const res = await fetch(`${API_BASE}/api/swaps/bot/start`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          pairs: config.selectedPairs.map(p => p.replace("/", "-")), // OKX usa guiones
+          pairs: config.selectedPairs.map(p => p.replace("/", "-")), 
           targetPriceType: config.targetPriceType,
           targetPrice: Number(config.targetPrice),
           maxSlippage: config.maxSlippage,
           amountPerTrade: config.amountPerTrade,
-          userAddress: "0x0000000000000000000000000000000000000000" // TODO: conectar wallet
+          userAddress: "0x0000000000000000000000000000000000000000" 
         })
       })
 
@@ -63,7 +64,7 @@ export function BotModeView() {
   // 🔹 Detener Bot (llamando backend real)
   const handleStopBot = async () => {
     try {
-      const res = await fetch("http://localhost:3001/api/swaps/bot/stop", {
+      const res = await fetch(`${API_BASE}/api/swaps/bot/stop`, {
         method: "POST"
       })
 

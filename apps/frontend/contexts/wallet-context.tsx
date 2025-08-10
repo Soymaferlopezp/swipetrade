@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { useAccount, useConnect, useDisconnect, useWalletClient } from "wagmi";
 import { useRouter, usePathname } from "next/navigation";
-import { ethers } from "ethers"; // ✅ Ethers v5 compatible
+import { ethers } from "ethers"; 
 
 export interface WalletContextType {
   address: `0x${string}` | undefined;
