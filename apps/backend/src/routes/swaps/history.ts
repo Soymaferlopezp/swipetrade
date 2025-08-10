@@ -20,6 +20,7 @@ router.post('/', (req, res) => {
     status,
     tradeType,
     timestamp,
+    walletAddress,
   } = req.body
 
   if (!pair || !price || !action || !status || !timestamp) {
@@ -39,6 +40,7 @@ router.post('/', (req, res) => {
     status, // "rejected"
     tradeType: tradeType || 'manual',
     timestamp,
+    walletAddress,
   }
 
   tradeHistory.push(record)
