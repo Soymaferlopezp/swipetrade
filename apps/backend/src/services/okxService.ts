@@ -1,3 +1,4 @@
+// src/services/okxService.ts
 import axios from 'axios';
 
 type TokenInfo = {
@@ -34,13 +35,14 @@ export const fetchDEXQuotes = async (options: FetchQuotesOptions) => {
   try {
     const recommendations = await Promise.all(
       tokenList
-        .filter(t => t.symbol !== quoteSymbol && !excludeSymbols.includes(t.symbol)) // Filtra tokens de base y excluidos
-        .slice(0, maxBaseTokens) // Limita el número de tokens a procesar
+        .filter(t => t.symbol !== quoteSymbol && !excludeSymbols.includes(t.symbol))
+        .slice(0, maxBaseTokens)
         .map(async (baseToken) => {
           const quoteToken = tokenList.find(t => t.symbol === quoteSymbol);
           if (!quoteToken) return null;
 
-          const res = await axios.get('https://web3.okx.com/api/v5/dex/swap/quote', {
+          // ✅ CAMBIO AQUI: Llamada a tu Worker de Cloudflare
+          const res = await axios.get('https://apiswipetrade.0xmaferlopez.workers.dev', {
             params: {
               baseTokenAddress: baseToken.address,
               quoteTokenAddress: quoteToken.address,
@@ -66,13 +68,9 @@ export const fetchDEXQuotes = async (options: FetchQuotesOptions) => {
         })
     );
 
-    return recommendations.filter(Boolean); // limpiamos nulls
+    return recommendations.filter(Boolean);
   } catch (err: unknown) {
-    if (axios.isAxiosError(err)) {
-      console.error('❌ Axios error:', err.message);
-    } else {
-      console.error('❌ Unknown error fetching DEX quotes');
-    }
+    console.error('❌ Error fetching DEX quotes');
     return [];
   }
 };
