@@ -8,22 +8,14 @@ import { Badge } from "@/components/ui/badge"
 import { TrendingUp, Activity, DollarSign } from "lucide-react"
 import axios from "axios"
 import { API_BASE } from "@/lib/api";
-import { useAccount } from "wagmi";
 
 export function TradeHistoryView() {
   const [history, setHistory] = useState<TradeRecord[]>([])
-  const { address, isConnected } = useAccount();
 
   useEffect(() => {
     const fetchHistory = async () => {
-      if (!isConnected || !address) {
-        setHistory([]);
-        console.log("No wallet connected. Skipping trade history fetch.");
-        return;
-      }
-
       try {
-        const res = await axios.get(`${API_BASE}/api/swaps/history?walletAddress=${address}`)
+        const res = await axios.get(`${API_BASE}/api/swaps/history`)
         const raw = res.data
 
         const formatted: TradeRecord[] = raw.map((item: any, index: number) => ({
@@ -49,7 +41,7 @@ export function TradeHistoryView() {
     }
 
     fetchHistory()
-  }, [address, isConnected])
+  }, [])
 
   const stats = {
     totalTrades: history.length,

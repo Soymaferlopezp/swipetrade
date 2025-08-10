@@ -20,7 +20,6 @@ export function TradeHistoryTable() {
 
   useEffect(() => {
     const fetchTrades = async () => {
-
       if (!isConnected || !address) {
         setTrades([]); 
         console.log("No wallet connected. Skipping trade history fetch.");
@@ -28,8 +27,8 @@ export function TradeHistoryTable() {
       }
 
       try {
-        const response = await axios.get(`${API_BASE}/api/swaps/history?walletAddress=${address}`);
-        const data = response.data;
+        const response = await axios.get(`${API_BASE}/api/swaps/history`)
+        const data = response.data
 
         const formattedTrades: TradeRecord[] = data.map((item: any, index: number) => ({
           id: item.id || index.toString(),
@@ -55,7 +54,7 @@ export function TradeHistoryTable() {
     }
 
     fetchTrades()
-  }, [address, isConnected])
+  }, [])
 
   const formatDate = (date: Date) =>
     date.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" })
