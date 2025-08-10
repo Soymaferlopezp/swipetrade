@@ -5,7 +5,7 @@ import historyRouter from './routes/swaps/history';
 import executeRouter from './routes/swaps/execute';
 import simulatorRouter from './routes/swaps/simulator';
 import pairsRouter from './routes/swaps/pairs';
-import recommendationsRouter from './routes/swaps/recommendations';
+
 
 const app = express();
 
@@ -28,7 +28,7 @@ app.use('/api/swaps/history', historyRouter);
 app.use('/api/swaps/execute', executeRouter);
 app.use('/api/swaps/simulator', simulatorRouter);
 app.use('/api/swaps/pairs', pairsRouter);
-app.use('/api/swaps/recommendations', recommendationsRouter);
+
 
 app.get('/api/swaps/recommendations', async (_req, res) => {
   try {
