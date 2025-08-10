@@ -1,27 +1,28 @@
 'use client'
 
 import { ReactNode } from 'react'
-import { getDefaultConfig, RainbowKitProvider } from '@rainbow-me/rainbowkit'
-import { WagmiConfig } from 'wagmi'
+import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
+import { WagmiConfig, createConfig, http } from 'wagmi'
 import { mainnet } from 'wagmi/chains'
+import { injected } from 'wagmi/connectors'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 const queryClient = new QueryClient()
 
-const config = getDefaultConfig({
-  appName: 'SwipeTrade',
-  projectId: 'b215d6aecfe0cc2f031bec475b89e3ec',
+const config = createConfig({
   chains: [mainnet],
-  ssr: true,
+  connectors: [injected()],
+  transports: {
+    [mainnet.id]: http('https://cloudflare-eth.com'),
+  },
 })
 
 export function WalletProvider({ children }: { children: ReactNode }) {
   return (
-    <QueryClientProvider client={queryClient}>
-      <WagmiConfig config={config}>
+    <WagmiConfig config={config}>
+      <QueryClientProvider client={queryClient}>
         <RainbowKitProvider>{children}</RainbowKitProvider>
-      </WagmiConfig>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </WagmiConfig>
   )
 }
-
